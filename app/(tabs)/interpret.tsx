@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import {
   StyleSheet,
   ScrollView,
@@ -8,6 +8,8 @@ import {
   KeyboardAvoidingView,
   Platform,
   View,
+  TextInput,
+  Modal,
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -25,13 +27,21 @@ export default function InterpretScreen() {
   const colors = Colors[colorScheme ?? 'light'];
 
   const [dreams, setDreams] = useState<Dream[]>([]);
+  const [filteredDreams, setFilteredDreams] = useState<Dream[]>([]);
   const [selectedDream, setSelectedDream] = useState<Dream | null>(null);
   const [interpretation, setInterpretation] = useState<DreamInterpretation | null>(null);
   const [isLoading, setIsLoading] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [showInterpretationModal, setShowInterpretationModal] = useState(false);
+  const [showDreamDetailModal, setShowDreamDetailModal] = useState(false);
 
   useEffect(() => {
     loadDreams();
   }, []);
+
+  useEffect(() => {
+    filterDreams();
+  }, [dreams, searchQuery, filterDreams]);
 
   const loadDreams = async () => {
     try {
@@ -42,9 +52,20 @@ export default function InterpretScreen() {
     }
   };
 
+  const filterDreams = useCallback(() => {
+    if (!searchQuery.trim()) {
+      setFilteredDreams(dreams);
+    } else {
+      const filtered = dreams.filter(dream =>
+        dream.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        dream.content.toLowerCase().includes(searchQuery.toLowerCase())
+      );
+      setFilteredDreams(filtered);
+    }
+  }, [dreams, searchQuery]);
+
   const handleDreamSelect = (dream: Dream) => {
     setSelectedDream(dream);
-    setInterpretation(dream.interpretation || null);
   };
 
   const handleInterpret = async () => {
@@ -54,19 +75,10 @@ export default function InterpretScreen() {
     try {
       // AI 해석 생성 (실제로는 외부 AI API를 호출)
       const mockInterpretation = DreamService.generateMockInterpretation(selectedDream.content);
+      setInterpretation(mockInterpretation);
 
-      // 해석 저장
-      const savedInterpretation = await DreamService.saveInterpretation({
-        ...mockInterpretation,
-        dreamId: selectedDream.id,
-      });
-
-      setInterpretation(savedInterpretation);
-
-      // 꿈 목록 업데이트
-      await loadDreams();
-
-      Alert.alert('해석 완료', '꿈 해석이 완료되었습니다!');
+      // 모달 표시
+      setShowInterpretationModal(true);
     } catch (error) {
       console.error('Failed to interpret dream:', error);
       Alert.alert('오류', '꿈 해석 중 오류가 발생했습니다.');
@@ -111,8 +123,88 @@ export default function InterpretScreen() {
             </ThemedView>
           </ThemedView>
 
+          {/* Search Bar */}
+          <ThemedView style={[styles.searchContainer, {
+            backgroundColor: colors.card,
+            shadowColor: colors.cardShadow,
+            shadowOffset: { width: 0, height: 2 },
+            shadowOpacity: 1,
+            shadowRadius: 8,
+            elevation: 4,
+          }]}>
+            <View style={styles.searchInputContainer}>
+              <IconSymbol name="magnifyingglass" size={16} color={colors.icon} />
+              <TextInput
+                style={[styles.searchInput, { color: colors.text }]}
+                value={searchQuery}
+                onChangeText={setSearchQuery}
+                placeholder="꿈 제목이나 내용으로 검색하세요"
+                placeholderTextColor={colors.icon}
+              />
+              {searchQuery.length > 0 && (
+                <TouchableOpacity onPress={() => setSearchQuery('')}>
+                  <IconSymbol name="xmark.circle.fill" size={16} color={colors.icon} />
+                </TouchableOpacity>
+              )}
+            </View>
+          </ThemedView>
+
+          {/* Selected Dream Section */}
+          {selectedDream && (
+            <ThemedView style={[styles.selectedDreamSection, {
+              backgroundColor: colors.card,
+              shadowColor: colors.cardShadow,
+              shadowOffset: { width: 0, height: 4 },
+              shadowOpacity: 1,
+              shadowRadius: 12,
+              elevation: 8,
+            }]}>
+              <ThemedView style={styles.selectedDreamHeader}>
+                <TouchableOpacity
+                  style={styles.selectedDreamTitleContainer}
+                  onPress={() => {
+                    console.log('Dream detail modal opening...');
+                    setShowDreamDetailModal(true);
+                  }}
+                >
+                  <ThemedText type="subtitle" style={[styles.selectedDreamTitle, { color: colors.primary }]}>
+                    {selectedDream.title}
+                  </ThemedText>
+                  <IconSymbol name="chevron.right" size={16} color={colors.icon} />
+                </TouchableOpacity>
+                <TouchableOpacity
+                  style={[
+                    styles.interpretButton,
+                    {
+                      backgroundColor: colors.accent,
+                      opacity: isLoading ? 0.6 : 1,
+                      shadowColor: colors.accent,
+                      shadowOffset: { width: 0, height: 2 },
+                      shadowOpacity: 0.3,
+                      shadowRadius: 4,
+                      elevation: 3,
+                    }
+                  ]}
+                  onPress={handleInterpret}
+                  disabled={isLoading}
+                >
+                  {isLoading ? (
+                    <ActivityIndicator size="small" color="white" />
+                  ) : (
+                    <>
+                      <IconSymbol name="brain" size={16} color="white" />
+                      <ThemedText style={[styles.interpretButtonText, { color: 'white' }]}>
+                        해석하기
+                      </ThemedText>
+                    </>
+                  )}
+                </TouchableOpacity>
+              </ThemedView>
+            </ThemedView>
+          )}
+
           <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
-        {dreams.length === 0 ? (
+        {filteredDreams.length === 0 ? (
           <ThemedView style={styles.emptyState}>
             <IconSymbol name="brain" size={48} color={colors.icon} />
             <ThemedText style={[styles.emptyText, { color: colors.icon }]}>
@@ -129,7 +221,7 @@ export default function InterpretScreen() {
                 꿈 선택하기
               </ThemedText>
               <ThemedView style={styles.dreamList}>
-                {dreams.map((dream) => (
+                {filteredDreams.map((dream) => (
                   <TouchableOpacity
                     key={dream.id}
                     style={[
@@ -145,9 +237,6 @@ export default function InterpretScreen() {
                       <ThemedText type="defaultSemiBold" style={[styles.dreamItemTitle, { color: colors.text }]}>
                         {dream.title}
                       </ThemedText>
-                      {dream.interpretation && (
-                        <IconSymbol name="checkmark.circle.fill" size={16} color={colors.positive} />
-                      )}
                     </ThemedView>
                     <ThemedText
                       style={[styles.dreamItemContent, { color: colors.icon }]}
@@ -162,105 +251,125 @@ export default function InterpretScreen() {
                 ))}
               </ThemedView>
             </ThemedView>
-
-            {selectedDream && (
-              <ThemedView style={styles.section}>
-                <ThemedView style={styles.selectedDreamHeader}>
-                  <ThemedText type="subtitle" style={[styles.sectionTitle, { color: colors.primary }]}>
-                    선택된 꿈
-                  </ThemedText>
-                  {!interpretation && (
-                    <TouchableOpacity
-                      style={[
-                        styles.interpretButton,
-                        {
-                          backgroundColor: colors.accent,
-                          opacity: isLoading ? 0.6 : 1,
-                        }
-                      ]}
-                      onPress={handleInterpret}
-                      disabled={isLoading}
-                    >
-                      {isLoading ? (
-                        <ActivityIndicator size="small" color="white" />
-                      ) : (
-                        <>
-                          <IconSymbol name="brain" size={16} color="white" />
-                          <ThemedText style={[styles.interpretButtonText, { color: 'white' }]}>
-                            해석하기
-                          </ThemedText>
-                        </>
-                      )}
-                    </TouchableOpacity>
-                  )}
-                </ThemedView>
-
-                <ThemedView style={[styles.dreamDetail, { backgroundColor: colors.background }]}>
-                  <ThemedText type="defaultSemiBold" style={[styles.dreamDetailTitle, { color: colors.text }]}>
-                    {selectedDream.title}
-                  </ThemedText>
-                  <ThemedText style={[styles.dreamDetailContent, { color: colors.text }]}>
-                    {selectedDream.content}
-                  </ThemedText>
-                </ThemedView>
-
-                {interpretation && (
-                  <ThemedView style={styles.interpretationSection}>
-                    <ThemedView style={[styles.interpretationHeader, { backgroundColor: getMoodColor(interpretation.mood) }]}>
-                      <IconSymbol name="brain" size={20} color="white" />
-                      <ThemedText style={[styles.interpretationTitle, { color: 'white' }]}>
-                        AI 해석 결과
-                      </ThemedText>
-                    </ThemedView>
-
-                    <ThemedView style={[styles.interpretationContent, { backgroundColor: colors.background }]}>
-                      <ThemedText style={[styles.interpretationText, { color: colors.text }]}>
-                        {interpretation.analysis}
-                      </ThemedText>
-
-                      {interpretation.symbols.length > 0 && (
-                        <ThemedView style={styles.symbolsSection}>
-                          <ThemedText type="defaultSemiBold" style={[styles.symbolsTitle, { color: colors.primary }]}>
-                            주요 상징
-                          </ThemedText>
-                          {interpretation.symbols.map((symbol, index) => (
-                            <ThemedView key={index} style={[styles.symbolItem, { borderColor: colors.border }]}>
-                              <ThemedText type="defaultSemiBold" style={[styles.symbolName, { color: colors.accent }]}>
-                                {symbol.symbol}
-                              </ThemedText>
-                              <ThemedText style={[styles.symbolMeaning, { color: colors.text }]}>
-                                {symbol.meaning}
-                              </ThemedText>
-                            </ThemedView>
-                          ))}
-                        </ThemedView>
-                      )}
-
-                      {interpretation.themes.length > 0 && (
-                        <ThemedView style={styles.themesSection}>
-                          <ThemedText type="defaultSemiBold" style={[styles.themesTitle, { color: colors.primary }]}>
-                            주요 테마
-                          </ThemedText>
-                          <ThemedView style={styles.themesContainer}>
-                            {interpretation.themes.map((theme, index) => (
-                              <ThemedView key={index} style={[styles.themeTag, { backgroundColor: colors.secondary }]}>
-                                <ThemedText style={[styles.themeText, { color: colors.primary }]}>
-                                  {theme}
-                                </ThemedText>
-                              </ThemedView>
-                            ))}
-                          </ThemedView>
-                        </ThemedView>
-                      )}
-                    </ThemedView>
-                  </ThemedView>
-                )}
-              </ThemedView>
-            )}
           </>
         )}
           </ScrollView>
         </KeyboardAvoidingView>
+
+        {/* Dream Detail Modal */}
+        <Modal
+          animationType="slide"
+          transparent={true}
+          visible={showDreamDetailModal}
+          onRequestClose={() => setShowDreamDetailModal(false)}
+        >
+          <View style={styles.modalOverlay}>
+            <View style={[styles.modalContent, { backgroundColor: colors.card }]}>
+              <View style={styles.modalHeader}>
+                <ThemedText type="title" style={[styles.modalTitle, { color: colors.primary }]}>
+                  꿈 상세보기
+                </ThemedText>
+                <TouchableOpacity onPress={() => setShowDreamDetailModal(false)}>
+                  <IconSymbol name="xmark.circle.fill" size={24} color={colors.icon} />
+                </TouchableOpacity>
+              </View>
+
+              <ScrollView style={styles.modalScrollView} showsVerticalScrollIndicator={false}>
+                {selectedDream && (
+                  <View style={styles.dreamDetailModalContent}>
+                    <ThemedText type="title" style={[styles.dreamDetailModalTitle, { color: colors.text }]}>
+                      {selectedDream.title}
+                    </ThemedText>
+                    <ThemedText style={[styles.dreamDetailModalDate, { color: colors.icon }]}>
+                      {formatDate(selectedDream.date)}
+                    </ThemedText>
+                    <ThemedText style={[styles.dreamDetailModalText, { color: colors.text }]}>
+                      {selectedDream.content}
+                    </ThemedText>
+                  </View>
+                )}
+              </ScrollView>
+            </View>
+          </View>
+        </Modal>
+
+        {/* Interpretation Modal */}
+        <Modal
+          animationType="slide"
+          transparent={true}
+          visible={showInterpretationModal}
+          onRequestClose={() => setShowInterpretationModal(false)}
+        >
+          <View style={styles.modalOverlay}>
+            <View style={[styles.modalContent, { backgroundColor: colors.card }]}>
+              <View style={styles.modalHeader}>
+                <ThemedText type="title" style={[styles.modalTitle, { color: colors.primary }]}>
+                  AI 해석 결과
+                </ThemedText>
+                <TouchableOpacity onPress={() => setShowInterpretationModal(false)}>
+                  <IconSymbol name="xmark.circle.fill" size={24} color={colors.icon} />
+                </TouchableOpacity>
+              </View>
+
+              <ScrollView style={styles.modalScrollView} showsVerticalScrollIndicator={false}>
+                {interpretation && (
+                  <>
+                    <View style={[styles.modalInterpretationHeader, { backgroundColor: getMoodColor(interpretation.mood) }]}>
+                      <IconSymbol name="sparkles" size={20} color="white" />
+                      <ThemedText style={[styles.modalInterpretationTitle, { color: 'white' }]}>
+                        해석 분석
+                      </ThemedText>
+                    </View>
+
+                    <View style={styles.modalInterpretationContent}>
+                      <ThemedText style={[styles.modalInterpretationText, { color: colors.text }]}>
+                        {interpretation.analysis}
+                      </ThemedText>
+
+                      {interpretation.symbols.length > 0 && (
+                        <View style={styles.modalSymbolsSection}>
+                          <ThemedText type="defaultSemiBold" style={[styles.modalSymbolsTitle, { color: colors.primary }]}>
+                            주요 상징
+                          </ThemedText>
+                          {interpretation.symbols.map((symbol, index) => (
+                            <View key={index} style={[styles.modalSymbolItem, {
+                              backgroundColor: colors.background,
+                              borderColor: colors.border
+                            }]}>
+                              <ThemedText type="defaultSemiBold" style={[styles.modalSymbolName, { color: colors.accent }]}>
+                                {symbol.symbol}
+                              </ThemedText>
+                              <ThemedText style={[styles.modalSymbolMeaning, { color: colors.text }]}>
+                                {symbol.meaning}
+                              </ThemedText>
+                            </View>
+                          ))}
+                        </View>
+                      )}
+
+                      {interpretation.themes.length > 0 && (
+                        <View style={styles.modalThemesSection}>
+                          <ThemedText type="defaultSemiBold" style={[styles.modalThemesTitle, { color: colors.primary }]}>
+                            주요 테마
+                          </ThemedText>
+                          <View style={styles.modalThemesContainer}>
+                            {interpretation.themes.map((theme, index) => (
+                              <View key={index} style={[styles.modalThemeTag, { backgroundColor: colors.secondary }]}>
+                                <ThemedText style={[styles.modalThemeText, { color: colors.primary }]}>
+                                  {theme}
+                                </ThemedText>
+                              </View>
+                            ))}
+                          </View>
+                        </View>
+                      )}
+                    </View>
+                  </>
+                )}
+              </ScrollView>
+            </View>
+          </View>
+        </Modal>
       </LinearGradient>
     </SafeAreaView>
   );
@@ -296,6 +405,65 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: 15,
+  },
+  searchContainer: {
+    marginHorizontal: 20,
+    marginBottom: 20,
+    borderRadius: 16,
+    padding: 16,
+  },
+  searchInputContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+  },
+  searchInput: {
+    flex: 1,
+    fontSize: 16,
+    paddingVertical: 4,
+  },
+  selectedDreamSection: {
+    marginHorizontal: 20,
+    marginBottom: 20,
+    borderRadius: 20,
+    overflow: 'hidden',
+  },
+  selectedDreamHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    padding: 20,
+  },
+  selectedDreamTitleContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    flex: 1,
+    marginRight: 16,
+    paddingVertical: 8,
+  },
+  selectedDreamTitle: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    flex: 1,
+    marginRight: 8,
+  },
+  dreamDetail: {
+    padding: 20,
+    paddingTop: 0,
+  },
+  dreamDetailTitle: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    marginBottom: 8,
+  },
+  dreamDetailContent: {
+    fontSize: 16,
+    lineHeight: 24,
+    marginBottom: 8,
+  },
+  dreamDetailDate: {
+    fontSize: 14,
+    fontWeight: '500',
   },
   content: {
     flex: 1,
@@ -349,37 +517,17 @@ const styles = StyleSheet.create({
   dreamItemDate: {
     fontSize: 12,
   },
-  selectedDreamHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: 15,
-  },
   interpretButton: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingHorizontal: 16,
-    paddingVertical: 8,
-    borderRadius: 20,
-    gap: 6,
+    paddingHorizontal: 20,
+    paddingVertical: 12,
+    borderRadius: 24,
+    gap: 8,
   },
   interpretButtonText: {
-    fontSize: 14,
-    fontWeight: '600',
-  },
-  dreamDetail: {
-    borderRadius: 12,
-    padding: 16,
-    marginBottom: 15,
-  },
-  dreamDetailTitle: {
     fontSize: 16,
-    fontWeight: 'bold',
-    marginBottom: 8,
-  },
-  dreamDetailContent: {
-    fontSize: 14,
-    lineHeight: 20,
+    fontWeight: '600',
   },
   interpretationSection: {
     marginTop: 10,
@@ -446,5 +594,115 @@ const styles = StyleSheet.create({
   themeText: {
     fontSize: 12,
     fontWeight: '600',
+  },
+  // Modal styles
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    justifyContent: 'flex-end',
+  },
+  modalContent: {
+    borderTopLeftRadius: 24,
+    borderTopRightRadius: 24,
+    maxHeight: '80%',
+    paddingTop: 20,
+  },
+  modalHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingHorizontal: 24,
+    paddingBottom: 20,
+  },
+  modalTitle: {
+    fontSize: 20,
+    fontWeight: 'bold',
+  },
+  modalScrollView: {
+    flex: 1,
+    paddingHorizontal: 24,
+  },
+  modalInterpretationHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    padding: 16,
+    borderRadius: 12,
+    marginBottom: 20,
+    gap: 8,
+  },
+  modalInterpretationTitle: {
+    fontSize: 16,
+    fontWeight: 'bold',
+  },
+  modalInterpretationContent: {
+    paddingBottom: 40,
+  },
+  modalInterpretationText: {
+    fontSize: 16,
+    lineHeight: 24,
+    marginBottom: 24,
+  },
+  modalSymbolsSection: {
+    marginBottom: 24,
+  },
+  modalSymbolsTitle: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    marginBottom: 16,
+  },
+  modalSymbolItem: {
+    borderWidth: 1,
+    borderRadius: 12,
+    padding: 16,
+    marginBottom: 12,
+  },
+  modalSymbolName: {
+    fontSize: 16,
+    marginBottom: 6,
+  },
+  modalSymbolMeaning: {
+    fontSize: 14,
+    lineHeight: 20,
+  },
+  modalThemesSection: {
+    marginBottom: 20,
+  },
+  modalThemesTitle: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    marginBottom: 16,
+  },
+  modalThemesContainer: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 12,
+  },
+  modalThemeTag: {
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+    borderRadius: 20,
+  },
+  modalThemeText: {
+    fontSize: 14,
+    fontWeight: '600',
+  },
+  // Dream Detail Modal styles
+  dreamDetailModalContent: {
+    paddingBottom: 40,
+  },
+  dreamDetailModalTitle: {
+    fontSize: 24,
+    fontWeight: 'bold',
+    marginBottom: 8,
+  },
+  dreamDetailModalDate: {
+    fontSize: 16,
+    fontWeight: '500',
+    marginBottom: 20,
+  },
+  dreamDetailModalText: {
+    fontSize: 18,
+    lineHeight: 28,
+    letterSpacing: 0.3,
   },
 });
