@@ -151,7 +151,7 @@ export default function InterpretScreen() {
           >
             <View style={styles.searchInputContainer}>
               <IconSymbol
-                name="magnifyingglass.circle"
+                name="magnifyingglass"
                 size={16}
                 color={colors.icon}
               />

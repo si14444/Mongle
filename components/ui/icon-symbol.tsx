@@ -39,6 +39,8 @@ const MAPPING = {
   'calendar': 'event',
   'calendar.circle.fill': 'event',
   'sparkles': 'star',
+  'magnifyingglass': 'search',
+  'eye': 'visibility',
 } as IconMapping;
 
 /**

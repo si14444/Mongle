@@ -179,7 +179,7 @@ export default function TimelineScreen() {
           ]}
         >
           <View style={styles.searchInputContainer}>
-            <IconSymbol name="magnifyingglass.circle" size={16} color={colors.icon} />
+            <IconSymbol name="magnifyingglass" size={16} color={colors.icon} />
             <TextInput
               style={[styles.searchInput, { color: colors.text }]}
               value={searchQuery}
