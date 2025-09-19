@@ -69,15 +69,21 @@ export default function InterpretScreen() {
   };
 
   const handleInterpret = async () => {
-    if (!selectedDream) return;
+    if (!selectedDream) {
+      console.log('No selected dream');
+      return;
+    }
 
+    console.log('Starting interpretation for dream:', selectedDream.title);
     setIsLoading(true);
     try {
       // AI 해석 생성 (실제로는 외부 AI API를 호출)
       const mockInterpretation = DreamService.generateMockInterpretation(selectedDream.content);
+      console.log('Generated interpretation:', mockInterpretation);
       setInterpretation(mockInterpretation);
 
       // 모달 표시
+      console.log('Opening interpretation modal...');
       setShowInterpretationModal(true);
     } catch (error) {
       console.error('Failed to interpret dream:', error);
@@ -259,19 +265,28 @@ export default function InterpretScreen() {
         {/* Dream Detail Modal */}
         <Modal
           animationType="slide"
-          transparent={true}
+          transparent={false}
           visible={showDreamDetailModal}
           onRequestClose={() => setShowDreamDetailModal(false)}
         >
-          <View style={styles.modalOverlay}>
-            <View style={[styles.modalContent, { backgroundColor: colors.card }]}>
+          <LinearGradient
+            colors={colors.backgroundGradient}
+            style={styles.modalOverlay}
+            start={{ x: 0, y: 0 }}
+            end={{ x: 0, y: 1 }}
+          >
+            <SafeAreaView style={styles.modalContent}>
               <View style={styles.modalHeader}>
+                <TouchableOpacity
+                  style={[styles.backButton, { backgroundColor: colors.card }]}
+                  onPress={() => setShowDreamDetailModal(false)}
+                >
+                  <IconSymbol name="chevron.left" size={24} color={colors.primary} />
+                </TouchableOpacity>
                 <ThemedText type="title" style={[styles.modalTitle, { color: colors.primary }]}>
                   꿈 상세보기
                 </ThemedText>
-                <TouchableOpacity onPress={() => setShowDreamDetailModal(false)}>
-                  <IconSymbol name="xmark.circle.fill" size={24} color={colors.icon} />
-                </TouchableOpacity>
+                <View style={{ width: 40 }} />
               </View>
 
               <ScrollView style={styles.modalScrollView} showsVerticalScrollIndicator={false}>
@@ -289,26 +304,35 @@ export default function InterpretScreen() {
                   </View>
                 )}
               </ScrollView>
-            </View>
-          </View>
+            </SafeAreaView>
+          </LinearGradient>
         </Modal>
 
         {/* Interpretation Modal */}
         <Modal
           animationType="slide"
-          transparent={true}
+          transparent={false}
           visible={showInterpretationModal}
           onRequestClose={() => setShowInterpretationModal(false)}
         >
-          <View style={styles.modalOverlay}>
-            <View style={[styles.modalContent, { backgroundColor: colors.card }]}>
+          <LinearGradient
+            colors={colors.backgroundGradient}
+            style={styles.modalOverlay}
+            start={{ x: 0, y: 0 }}
+            end={{ x: 0, y: 1 }}
+          >
+            <SafeAreaView style={styles.modalContent}>
               <View style={styles.modalHeader}>
+                <TouchableOpacity
+                  style={[styles.backButton, { backgroundColor: colors.card }]}
+                  onPress={() => setShowInterpretationModal(false)}
+                >
+                  <IconSymbol name="chevron.left" size={24} color={colors.primary} />
+                </TouchableOpacity>
                 <ThemedText type="title" style={[styles.modalTitle, { color: colors.primary }]}>
                   AI 해석 결과
                 </ThemedText>
-                <TouchableOpacity onPress={() => setShowInterpretationModal(false)}>
-                  <IconSymbol name="xmark.circle.fill" size={24} color={colors.icon} />
-                </TouchableOpacity>
+                <View style={{ width: 40 }} />
               </View>
 
               <ScrollView style={styles.modalScrollView} showsVerticalScrollIndicator={false}>
@@ -367,8 +391,8 @@ export default function InterpretScreen() {
                   </>
                 )}
               </ScrollView>
-            </View>
-          </View>
+            </SafeAreaView>
+          </LinearGradient>
         </Modal>
       </LinearGradient>
     </SafeAreaView>
@@ -598,25 +622,35 @@ const styles = StyleSheet.create({
   // Modal styles
   modalOverlay: {
     flex: 1,
-    backgroundColor: 'rgba(0, 0, 0, 0.5)',
-    justifyContent: 'flex-end',
   },
   modalContent: {
-    borderTopLeftRadius: 24,
-    borderTopRightRadius: 24,
-    maxHeight: '80%',
+    flex: 1,
     paddingTop: 20,
   },
   modalHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    paddingHorizontal: 24,
-    paddingBottom: 20,
+    paddingHorizontal: 20,
+    paddingVertical: 16,
+  },
+  backButton: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    alignItems: 'center',
+    justifyContent: 'center',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 3,
   },
   modalTitle: {
     fontSize: 20,
     fontWeight: 'bold',
+    flex: 1,
+    textAlign: 'center',
   },
   modalScrollView: {
     flex: 1,
