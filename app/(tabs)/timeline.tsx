@@ -5,6 +5,8 @@ import {
   TouchableOpacity,
   Alert,
   RefreshControl,
+  TextInput,
+  View,
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -26,6 +28,7 @@ export default function TimelineScreen() {
   const { data: dreams = [], refetch, isRefetching } = useDreams();
   const deleteDreamMutation = useDeleteDream();
   const [selectedFilter, setSelectedFilter] = useState<'all' | 'positive' | 'negative' | 'neutral'>('all');
+  const [searchQuery, setSearchQuery] = useState('');
 
   const filters = [
     { key: 'all', label: '전체', icon: 'calendar' },
@@ -41,13 +44,25 @@ export default function TimelineScreen() {
     }, [refetch])
   );
 
-  // Filter dreams based on selected filter
+  // Filter dreams based on selected filter and search query
   const filteredDreams = useMemo(() => {
-    if (selectedFilter === 'all') {
-      return dreams;
+    let filtered = dreams;
+
+    // Filter by emotion
+    if (selectedFilter !== 'all') {
+      filtered = filtered.filter(dream => dream.emotion === selectedFilter);
     }
-    return dreams.filter(dream => dream.emotion === selectedFilter);
-  }, [dreams, selectedFilter]);
+
+    // Filter by search query
+    if (searchQuery.trim()) {
+      filtered = filtered.filter(dream =>
+        dream.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        dream.content.toLowerCase().includes(searchQuery.toLowerCase())
+      );
+    }
+
+    return filtered;
+  }, [dreams, selectedFilter, searchQuery]);
 
   const handleRefresh = () => {
     refetch();
@@ -141,6 +156,32 @@ export default function TimelineScreen() {
           </ThemedView>
         </ThemedView>
 
+        {/* Search Bar */}
+        <ThemedView style={[styles.searchContainer, {
+          backgroundColor: colors.card,
+          shadowColor: colors.cardShadow,
+          shadowOffset: { width: 0, height: 2 },
+          shadowOpacity: 1,
+          shadowRadius: 8,
+          elevation: 4,
+        }]}>
+          <View style={styles.searchInputContainer}>
+            <IconSymbol name="magnifyingglass" size={16} color={colors.icon} />
+            <TextInput
+              style={[styles.searchInput, { color: colors.text }]}
+              value={searchQuery}
+              onChangeText={setSearchQuery}
+              placeholder="꿈 제목이나 내용으로 검색하세요"
+              placeholderTextColor={colors.icon}
+            />
+            {searchQuery.length > 0 && (
+              <TouchableOpacity onPress={() => setSearchQuery('')}>
+                <IconSymbol name="xmark.circle.fill" size={16} color={colors.icon} />
+              </TouchableOpacity>
+            )}
+          </View>
+        </ThemedView>
+
       <ThemedView style={styles.filterContainer}>
         <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.filterScrollView}>
           {filters.map((filter) => (
@@ -227,8 +268,8 @@ export default function TimelineScreen() {
                       onPress={() => handleDreamPress(dream)}
                       onLongPress={() => handleDeleteDream(dream.id)}
                     >
-                      <ThemedView style={styles.dreamHeader}>
-                        <ThemedView style={styles.dreamTitleContainer}>
+                      <View style={styles.dreamHeader}>
+                        <View style={styles.dreamTitleContainer}>
                           <ThemedText type="defaultSemiBold" style={[styles.dreamTitle, { color: colors.text }]}>
                             {dream.title}
                           </ThemedText>
@@ -237,7 +278,7 @@ export default function TimelineScreen() {
                             size={16}
                             color={getEmotionColor(dream.emotion)}
                           />
-                        </ThemedView>
+                        </View>
                         {dream.interpretation && (
                           <ThemedView style={[styles.interpretedBadge, { backgroundColor: colors.positive }]}>
                             <ThemedText style={[styles.interpretedText, { color: 'white' }]}>
@@ -245,7 +286,7 @@ export default function TimelineScreen() {
                             </ThemedText>
                           </ThemedView>
                         )}
-                      </ThemedView>
+                      </View>
 
                       <ThemedText
                         style={[styles.dreamContent, { color: colors.icon }]}
@@ -305,6 +346,22 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: 15,
+  },
+  searchContainer: {
+    marginHorizontal: 20,
+    marginBottom: 20,
+    borderRadius: 16,
+    padding: 12,
+  },
+  searchInputContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+  },
+  searchInput: {
+    flex: 1,
+    fontSize: 16,
+    paddingVertical: 0,
   },
   filterContainer: {
     paddingVertical: 15,
