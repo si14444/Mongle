@@ -35,9 +35,9 @@ export default function RecordScreen() {
   const autoSaveTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const emotions = [
-    { key: 'positive', label: '긍정적', icon: '😊', color: colors.positive },
-    { key: 'neutral', label: '중성적', icon: '😐', color: colors.neutral },
-    { key: 'negative', label: '부정적', icon: '😔', color: colors.negative },
+    { key: 'positive', label: '긍정적', icon: 'sparkles', color: colors.positive },
+    { key: 'neutral', label: '중성적', icon: 'minus', color: colors.neutral },
+    { key: 'negative', label: '부정적', icon: 'cloud.fill', color: colors.negative },
   ] as const;
 
   const autoSave = useCallback(() => {
@@ -216,7 +216,7 @@ export default function RecordScreen() {
                 기분 *
               </ThemedText>
             </View>
-            <ThemedView style={styles.emotionContainer}>
+            <View style={styles.emotionContainer}>
               {emotions.map((emotion) => (
                 <TouchableOpacity
                   key={emotion.key}
@@ -224,7 +224,7 @@ export default function RecordScreen() {
                     styles.emotionButton,
                     {
                       backgroundColor:
-                        selectedEmotion === emotion.key ? emotion.color : colors.background,
+                        selectedEmotion === emotion.key ? emotion.color : 'transparent',
                       borderColor: selectedEmotion === emotion.key ? emotion.color : colors.borderLight,
                       shadowColor: selectedEmotion === emotion.key ? emotion.color : 'transparent',
                       shadowOffset: { width: 0, height: 2 },
@@ -235,7 +235,12 @@ export default function RecordScreen() {
                   ]}
                   onPress={() => setSelectedEmotion(emotion.key)}
                 >
-                  <ThemedText style={styles.emotionIcon}>{emotion.icon}</ThemedText>
+                  <IconSymbol
+                    name={emotion.icon}
+                    size={32}
+                    color={selectedEmotion === emotion.key ? 'white' : colors.text}
+                    style={styles.emotionIcon}
+                  />
                   <ThemedText
                     style={[
                       styles.emotionLabel,
@@ -249,7 +254,7 @@ export default function RecordScreen() {
                   </ThemedText>
                 </TouchableOpacity>
               ))}
-            </ThemedView>
+            </View>
           </ThemedView>
 
           <ThemedView style={[styles.inputContainer, {
@@ -284,45 +289,46 @@ export default function RecordScreen() {
               textAlignVertical="top"
             />
           </ThemedView>
-        </ScrollView>
 
-        <ThemedView style={styles.footer}>
-          <TouchableOpacity
-            style={[
-              styles.saveButton,
-              {
-                opacity: saveDreamMutation.isPending ? 0.6 : 1,
-                shadowColor: colors.primary,
-                shadowOffset: { width: 0, height: 4 },
-                shadowOpacity: 0.3,
-                shadowRadius: 12,
-                elevation: 8,
-              }
-            ]}
-            onPress={handleSave}
-            disabled={saveDreamMutation.isPending}
-          >
-            <LinearGradient
-              colors={[colors.primary, colors.primaryLight]}
-              style={styles.saveButtonGradient}
-              start={{ x: 0, y: 0 }}
-              end={{ x: 1, y: 0 }}
+          {/* Save Button */}
+          <ThemedView style={styles.saveButtonContainer}>
+            <TouchableOpacity
+              style={[
+                styles.saveButton,
+                {
+                  opacity: saveDreamMutation.isPending ? 0.6 : 1,
+                  shadowColor: colors.primary,
+                  shadowOffset: { width: 0, height: 4 },
+                  shadowOpacity: 0.3,
+                  shadowRadius: 12,
+                  elevation: 8,
+                }
+              ]}
+              onPress={handleSave}
+              disabled={saveDreamMutation.isPending}
             >
-              {saveDreamMutation.isPending ? (
-                <ThemedText style={[styles.saveButtonText, { color: 'white' }]}>
-                  저장 중...
-                </ThemedText>
-              ) : (
-                <>
-                  <IconSymbol name="checkmark.circle.fill" size={24} color="white" />
+              <LinearGradient
+                colors={[colors.primary, colors.primaryLight]}
+                style={styles.saveButtonGradient}
+                start={{ x: 0, y: 0 }}
+                end={{ x: 1, y: 0 }}
+              >
+                {saveDreamMutation.isPending ? (
                   <ThemedText style={[styles.saveButtonText, { color: 'white' }]}>
-                    저장하기
+                    저장 중...
                   </ThemedText>
-                </>
-              )}
-            </LinearGradient>
-          </TouchableOpacity>
-        </ThemedView>
+                ) : (
+                  <>
+                    <IconSymbol name="checkmark.circle.fill" size={24} color="white" />
+                    <ThemedText style={[styles.saveButtonText, { color: 'white' }]}>
+                      저장하기
+                    </ThemedText>
+                  </>
+                )}
+              </LinearGradient>
+            </TouchableOpacity>
+          </ThemedView>
+        </ScrollView>
         </KeyboardAvoidingView>
       </LinearGradient>
     </SafeAreaView>
@@ -394,6 +400,8 @@ const styles = StyleSheet.create({
   emotionContainer: {
     flexDirection: 'row',
     gap: 12,
+    minHeight: 80,
+    alignItems: 'stretch',
   },
   emotionButton: {
     flex: 1,
@@ -401,9 +409,10 @@ const styles = StyleSheet.create({
     borderRadius: 16,
     padding: 16,
     alignItems: 'center',
+    justifyContent: 'center',
+    minHeight: 70,
   },
   emotionIcon: {
-    fontSize: 28,
     marginBottom: 8,
   },
   emotionLabel: {
@@ -418,8 +427,9 @@ const styles = StyleSheet.create({
     minHeight: 200,
     lineHeight: 24,
   },
-  footer: {
+  saveButtonContainer: {
     padding: 20,
+    paddingBottom: 40,
   },
   saveButton: {
     borderRadius: 20,

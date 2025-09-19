@@ -25,6 +25,7 @@ const MAPPING = {
   'plus': 'add',
   'plus.circle': 'add-circle',
   'plus.circle.fill': 'add-circle',
+  'minus': 'remove',
   'checkmark': 'check',
   'checkmark.circle.fill': 'check-circle',
   'trash': 'delete',
@@ -41,6 +42,9 @@ const MAPPING = {
   'sparkles': 'star',
   'magnifyingglass': 'search',
   'eye': 'visibility',
+  'minus.circle.fill': 'remove-circle',
+  'cloud.fill': 'cloud',
+  'clock.fill': 'schedule',
 } as IconMapping;
 
 /**
