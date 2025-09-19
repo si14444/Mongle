@@ -13,20 +13,22 @@ import {
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { useFocusEffect } from '@react-navigation/native';
 
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { Colors } from '@/constants/theme';
 import { useColorScheme } from '@/hooks/use-color-scheme';
-import { DreamService } from '@/services/dreamService';
+import { useDreams } from '@/hooks/useDreams';
 import { Dream, DreamInterpretation } from '@/types/dream';
 import { IconSymbol } from '@/components/ui/icon-symbol';
+import { DreamService } from '@/services/dreamService';
 
 export default function InterpretScreen() {
   const colorScheme = useColorScheme();
   const colors = Colors[colorScheme ?? 'light'];
 
-  const [dreams, setDreams] = useState<Dream[]>([]);
+  const { data: dreams = [], refetch } = useDreams();
   const [filteredDreams, setFilteredDreams] = useState<Dream[]>([]);
   const [selectedDream, setSelectedDream] = useState<Dream | null>(null);
   const [interpretation, setInterpretation] = useState<DreamInterpretation | null>(null);
@@ -35,22 +37,16 @@ export default function InterpretScreen() {
   const [showInterpretationModal, setShowInterpretationModal] = useState(false);
   const [showDreamDetailModal, setShowDreamDetailModal] = useState(false);
 
-  useEffect(() => {
-    loadDreams();
-  }, []);
+  // Refetch when tab is focused
+  useFocusEffect(
+    React.useCallback(() => {
+      refetch();
+    }, [refetch])
+  );
 
   useEffect(() => {
     filterDreams();
   }, [dreams, searchQuery, filterDreams]);
-
-  const loadDreams = async () => {
-    try {
-      const dreamList = await DreamService.getAllDreams();
-      setDreams(dreamList);
-    } catch (error) {
-      console.error('Failed to load dreams:', error);
-    }
-  };
 
   const filterDreams = useCallback(() => {
     if (!searchQuery.trim()) {
