@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useMemo } from 'react';
 import {
   StyleSheet,
   ScrollView,
@@ -8,12 +8,13 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { router } from 'expo-router';
+import { useFocusEffect } from '@react-navigation/native';
 
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { Colors } from '@/constants/theme';
 import { useColorScheme } from '@/hooks/use-color-scheme';
-import { DreamService } from '@/services/dreamService';
+import { useDreams, useDeleteDream } from '@/hooks/useDreams';
 import { Dream } from '@/types/dream';
 import { IconSymbol } from '@/components/ui/icon-symbol';
 
@@ -21,10 +22,9 @@ export default function TimelineScreen() {
   const colorScheme = useColorScheme();
   const colors = Colors[colorScheme ?? 'light'];
 
-  const [dreams, setDreams] = useState<Dream[]>([]);
-  const [filteredDreams, setFilteredDreams] = useState<Dream[]>([]);
+  const { data: dreams = [], refetch, isRefetching } = useDreams();
+  const deleteDreamMutation = useDeleteDream();
   const [selectedFilter, setSelectedFilter] = useState<'all' | 'positive' | 'negative' | 'neutral'>('all');
-  const [isRefreshing, setIsRefreshing] = useState(false);
 
   const filters = [
     { key: 'all', label: '전체', icon: 'calendar' },
@@ -33,35 +33,23 @@ export default function TimelineScreen() {
     { key: 'negative', label: '부정적', icon: 'cloud' },
   ] as const;
 
-  useEffect(() => {
-    loadDreams();
-  }, []);
+  // Refetch when tab is focused
+  useFocusEffect(
+    React.useCallback(() => {
+      refetch();
+    }, [refetch])
+  );
 
-  useEffect(() => {
-    filterDreams();
+  // Filter dreams based on selected filter
+  const filteredDreams = useMemo(() => {
+    if (selectedFilter === 'all') {
+      return dreams;
+    }
+    return dreams.filter(dream => dream.emotion === selectedFilter);
   }, [dreams, selectedFilter]);
 
-  const loadDreams = async () => {
-    try {
-      const dreamList = await DreamService.getAllDreams();
-      setDreams(dreamList);
-    } catch (error) {
-      console.error('Failed to load dreams:', error);
-    }
-  };
-
-  const filterDreams = () => {
-    if (selectedFilter === 'all') {
-      setFilteredDreams(dreams);
-    } else {
-      setFilteredDreams(dreams.filter(dream => dream.emotion === selectedFilter));
-    }
-  };
-
-  const handleRefresh = async () => {
-    setIsRefreshing(true);
-    await loadDreams();
-    setIsRefreshing(false);
+  const handleRefresh = () => {
+    refetch();
   };
 
   const handleDreamPress = (dream: Dream) => {
@@ -77,14 +65,13 @@ export default function TimelineScreen() {
         {
           text: '삭제',
           style: 'destructive',
-          onPress: async () => {
-            try {
-              await DreamService.deleteDream(dreamId);
-              await loadDreams();
-            } catch (error) {
-              console.error('Failed to delete dream:', error);
-              Alert.alert('오류', '꿈을 삭제하는 중 오류가 발생했습니다.');
-            }
+          onPress: () => {
+            deleteDreamMutation.mutate(dreamId, {
+              onError: (error) => {
+                console.error('Failed to delete dream:', error);
+                Alert.alert('오류', '꿈을 삭제하는 중 오류가 발생했습니다.');
+              },
+            });
           },
         },
       ]
@@ -182,7 +169,7 @@ export default function TimelineScreen() {
       <ScrollView
         style={styles.content}
         refreshControl={
-          <RefreshControl refreshing={isRefreshing} onRefresh={handleRefresh} />
+          <RefreshControl refreshing={isRefetching} onRefresh={handleRefresh} />
         }
         showsVerticalScrollIndicator={false}
       >

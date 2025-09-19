@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import {
   StyleSheet,
   TextInput,
@@ -17,7 +17,7 @@ import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { Colors } from '@/constants/theme';
 import { useColorScheme } from '@/hooks/use-color-scheme';
-import { DreamService } from '@/services/dreamService';
+import { useSaveDream } from '@/hooks/useDreams';
 import { IconSymbol } from '@/components/ui/icon-symbol';
 
 export default function RecordScreen() {
@@ -27,8 +27,9 @@ export default function RecordScreen() {
   const [title, setTitle] = useState('');
   const [content, setContent] = useState('');
   const [selectedEmotion, setSelectedEmotion] = useState<'positive' | 'negative' | 'neutral'>('neutral');
-  const [isLoading, setIsLoading] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
+
+  const saveDreamMutation = useSaveDream();
 
   const contentInputRef = useRef<TextInput>(null);
   const autoSaveTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -51,9 +52,9 @@ export default function RecordScreen() {
     if (title || content) {
       autoSave();
     }
-  }, [title, content, selectedEmotion]);
+  }, [title, content, selectedEmotion, autoSave]);
 
-  const autoSave = () => {
+  const autoSave = useCallback(() => {
     if (autoSaveTimeoutRef.current) {
       clearTimeout(autoSaveTimeoutRef.current);
     }
@@ -72,9 +73,9 @@ export default function RecordScreen() {
         }
       }
     }, 2000);
-  };
+  }, [title, content]);
 
-  const handleSave = async () => {
+  const handleSave = () => {
     if (!title.trim()) {
       Alert.alert('제목 입력', '꿈의 제목을 입력해주세요.');
       return;
@@ -85,38 +86,36 @@ export default function RecordScreen() {
       return;
     }
 
-    setIsLoading(true);
-    try {
-      const dreamData = {
-        title: title.trim(),
-        content: content.trim(),
-        date: new Date().toISOString().split('T')[0],
-        emotion: selectedEmotion,
-      };
+    const dreamData = {
+      title: title.trim(),
+      content: content.trim(),
+      date: new Date().toISOString().split('T')[0],
+      emotion: selectedEmotion,
+    };
 
-      await DreamService.saveDream(dreamData);
-
-      Alert.alert(
-        '저장 완료',
-        '꿈이 성공적으로 저장되었습니다.',
-        [
-          {
-            text: '확인',
-            onPress: () => {
-              setTitle('');
-              setContent('');
-              setSelectedEmotion('neutral');
-              router.back();
+    saveDreamMutation.mutate(dreamData, {
+      onSuccess: () => {
+        Alert.alert(
+          '저장 완료',
+          '꿈이 성공적으로 저장되었습니다.',
+          [
+            {
+              text: '확인',
+              onPress: () => {
+                setTitle('');
+                setContent('');
+                setSelectedEmotion('neutral');
+                router.back();
+              },
             },
-          },
-        ]
-      );
-    } catch (error) {
-      console.error('Failed to save dream:', error);
-      Alert.alert('오류', '꿈을 저장하는 중 오류가 발생했습니다.');
-    } finally {
-      setIsLoading(false);
-    }
+          ]
+        );
+      },
+      onError: (error) => {
+        console.error('Failed to save dream:', error);
+        Alert.alert('오류', '꿈을 저장하는 중 오류가 발생했습니다.');
+      },
+    });
   };
 
   const handleClear = () => {
@@ -292,7 +291,7 @@ export default function RecordScreen() {
             style={[
               styles.saveButton,
               {
-                opacity: isLoading ? 0.6 : 1,
+                opacity: saveDreamMutation.isPending ? 0.6 : 1,
                 shadowColor: colors.primary,
                 shadowOffset: { width: 0, height: 4 },
                 shadowOpacity: 0.3,
@@ -301,7 +300,7 @@ export default function RecordScreen() {
               }
             ]}
             onPress={handleSave}
-            disabled={isLoading}
+            disabled={saveDreamMutation.isPending}
           >
             <LinearGradient
               colors={[colors.primary, colors.primaryLight]}
@@ -309,7 +308,7 @@ export default function RecordScreen() {
               start={{ x: 0, y: 0 }}
               end={{ x: 1, y: 0 }}
             >
-              {isLoading ? (
+              {saveDreamMutation.isPending ? (
                 <ThemedText style={[styles.saveButtonText, { color: 'white' }]}>
                   저장 중...
                 </ThemedText>

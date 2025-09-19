@@ -1,6 +1,6 @@
 import { LinearGradient } from 'expo-linear-gradient';
 import { router } from 'expo-router';
-import React, { useEffect, useState } from 'react';
+import React from 'react';
 import { Image, ScrollView, StyleSheet, TouchableOpacity } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
@@ -9,30 +9,17 @@ import { ThemedView } from '@/components/themed-view';
 import { IconSymbol } from '@/components/ui/icon-symbol';
 import { Colors } from '@/constants/theme';
 import { useColorScheme } from '@/hooks/use-color-scheme';
-import { DreamService } from '@/services/dreamService';
-import { Dream, DreamStats } from '@/types/dream';
+import { useDreams, useDreamStats } from '@/hooks/useDreams';
+import { Dream } from '@/types/dream';
 
 export default function HomeScreen() {
   const colorScheme = useColorScheme();
   const colors = Colors[colorScheme ?? 'light'];
-  const [recentDreams, setRecentDreams] = useState<Dream[]>([]);
-  const [stats, setStats] = useState<DreamStats | null>(null);
 
-  useEffect(() => {
-    loadData();
-  }, []);
+  const { data: dreams = [] } = useDreams();
+  const { data: stats } = useDreamStats();
 
-  const loadData = async () => {
-    try {
-      const dreams = await DreamService.getAllDreams();
-      setRecentDreams(dreams.slice(0, 3));
-
-      const dreamStats = await DreamService.getDreamStats();
-      setStats(dreamStats);
-    } catch (error) {
-      console.error('Failed to load data:', error);
-    }
-  };
+  const recentDreams = dreams.slice(0, 3);
 
   const handleDreamPress = (dream: Dream) => {
     router.push(`/dream/${dream.id}` as any);

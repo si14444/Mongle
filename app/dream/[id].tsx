@@ -1,15 +1,14 @@
-import React, { useState, useEffect } from 'react';
-import { StyleSheet, ScrollView, Alert } from 'react-native';
+import React from 'react';
+import { StyleSheet, ScrollView, TouchableOpacity } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { router, useLocalSearchParams } from 'expo-router';
+import { useLocalSearchParams, router } from 'expo-router';
 
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { Colors } from '@/constants/theme';
 import { useColorScheme } from '@/hooks/use-color-scheme';
-import { DreamService } from '@/services/dreamService';
-import { Dream } from '@/types/dream';
+import { useDream } from '@/hooks/useDreams';
 import { IconSymbol } from '@/components/ui/icon-symbol';
 
 export default function DreamDetailScreen() {
@@ -17,26 +16,7 @@ export default function DreamDetailScreen() {
   const colors = Colors[colorScheme ?? 'light'];
   const { id } = useLocalSearchParams<{ id: string }>();
 
-  const [dream, setDream] = useState<Dream | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
-
-  useEffect(() => {
-    loadDream();
-  }, []);
-
-  const loadDream = async () => {
-    if (!id) return;
-
-    try {
-      const dreamData = await DreamService.getDreamById(id);
-      setDream(dreamData);
-    } catch (error) {
-      console.error('Failed to load dream:', error);
-      Alert.alert('오류', '꿈을 불러오는 중 오류가 발생했습니다.');
-    } finally {
-      setIsLoading(false);
-    }
-  };
+  const { data: dream, isLoading, error } = useDream(id!);
 
   const formatDate = (dateString: string) => {
     const date = new Date(dateString);
@@ -66,7 +46,7 @@ export default function DreamDetailScreen() {
     );
   }
 
-  if (!dream) {
+  if (error || (!isLoading && !dream)) {
     return (
       <SafeAreaView style={styles.container}>
         <LinearGradient
@@ -86,37 +66,76 @@ export default function DreamDetailScreen() {
       <LinearGradient
         colors={colors.backgroundGradient}
         style={styles.gradientBackground}
+        start={{ x: 0, y: 0 }}
+        end={{ x: 0, y: 1 }}
       >
-        <ScrollView style={styles.scrollView}>
-          <ThemedView style={[styles.card, { backgroundColor: colors.card }]}>
-            <ThemedView style={styles.header}>
-              <ThemedText type="title" style={[styles.title, { color: colors.primary }]}>
-                {dream.title}
+        {/* Header with back button */}
+        <ThemedView style={styles.headerBar}>
+          <TouchableOpacity
+            style={[styles.backButton, { backgroundColor: colors.card }]}
+            onPress={() => router.back()}
+          >
+            <IconSymbol name="chevron.left" size={24} color={colors.primary} />
+          </TouchableOpacity>
+        </ThemedView>
+
+        <ScrollView style={styles.scrollView} showsVerticalScrollIndicator={false}>
+          <ThemedView style={[styles.card, {
+            backgroundColor: colors.card,
+            shadowColor: colors.cardShadow,
+            shadowOffset: { width: 0, height: 8 },
+            shadowOpacity: 1,
+            shadowRadius: 20,
+            elevation: 12,
+          }]}>
+            {/* Title section without background */}
+            <ThemedView style={styles.titleSection}>
+              <ThemedView style={styles.titleContainer}>
+                <ThemedText type="title" style={[styles.title, { color: colors.text }]}>
+                  {dream.title}
+                </ThemedText>
+                <ThemedView
+                  style={[
+                    styles.emotionIndicator,
+                    {
+                      backgroundColor: getEmotionColor(dream.emotion),
+                      shadowColor: getEmotionColor(dream.emotion),
+                      shadowOffset: { width: 0, height: 2 },
+                      shadowOpacity: 0.3,
+                      shadowRadius: 4,
+                      elevation: 2,
+                    }
+                  ]}
+                />
+              </ThemedView>
+              <ThemedText style={[styles.date, { color: colors.icon }]}>
+                {formatDate(dream.date)}
               </ThemedText>
-              <ThemedView
-                style={[
-                  styles.emotionIndicator,
-                  { backgroundColor: getEmotionColor(dream.emotion) }
-                ]}
-              />
             </ThemedView>
 
-            <ThemedText style={[styles.date, { color: colors.icon }]}>
-              {formatDate(dream.date)}
-            </ThemedText>
+            {/* Content section */}
+            <ThemedView style={styles.contentSection}>
+              <ThemedText style={[styles.content, { color: colors.text }]}>
+                {dream.content}
+              </ThemedText>
+            </ThemedView>
 
-            <ThemedText style={[styles.content, { color: colors.text }]}>
-              {dream.content}
-            </ThemedText>
-
+            {/* Interpretation section */}
             {dream.interpretation && (
-              <ThemedView style={styles.interpretationSection}>
-                <ThemedText type="subtitle" style={[styles.sectionTitle, { color: colors.primary }]}>
-                  AI 해석
-                </ThemedText>
-                <ThemedText style={[styles.interpretation, { color: colors.text }]}>
-                  {dream.interpretation.analysis}
-                </ThemedText>
+              <ThemedView style={[styles.interpretationSection, { borderTopColor: colors.border }]}>
+                <ThemedView style={styles.interpretationHeader}>
+                  <ThemedView style={[styles.iconContainer, { backgroundColor: colors.primary + '15' }]}>
+                    <IconSymbol name="sparkles" size={18} color={colors.primary} />
+                  </ThemedView>
+                  <ThemedText type="subtitle" style={[styles.sectionTitle, { color: colors.primary }]}>
+                    AI 해석
+                  </ThemedText>
+                </ThemedView>
+                <ThemedView style={[styles.interpretationContent, { backgroundColor: colors.secondary + '20' }]}>
+                  <ThemedText style={[styles.interpretation, { color: colors.text }]}>
+                    {dream.interpretation.analysis}
+                  </ThemedText>
+                </ThemedView>
               </ThemedView>
             )}
           </ThemedView>
@@ -133,9 +152,27 @@ const styles = StyleSheet.create({
   gradientBackground: {
     flex: 1,
   },
+  headerBar: {
+    paddingHorizontal: 20,
+    paddingVertical: 16,
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  backButton: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    alignItems: 'center',
+    justifyContent: 'center',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 3,
+  },
   scrollView: {
     flex: 1,
-    padding: 20,
+    paddingHorizontal: 20,
   },
   loadingContainer: {
     flex: 1,
@@ -148,46 +185,78 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   card: {
-    borderRadius: 20,
-    padding: 24,
+    borderRadius: 24,
+    padding: 0,
+    marginBottom: 40,
+    overflow: 'hidden',
   },
-  header: {
+  titleSection: {
+    padding: 28,
+    paddingBottom: 24,
+  },
+  titleContainer: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    alignItems: 'center',
+    alignItems: 'flex-start',
     marginBottom: 12,
   },
   title: {
-    fontSize: 24,
+    fontSize: 28,
     fontWeight: 'bold',
     flex: 1,
+    marginRight: 16,
+    lineHeight: 36,
   },
   emotionIndicator: {
-    width: 16,
-    height: 16,
-    borderRadius: 8,
+    width: 20,
+    height: 20,
+    borderRadius: 10,
+    marginTop: 8,
   },
   date: {
-    fontSize: 14,
-    marginBottom: 20,
+    fontSize: 16,
+    fontWeight: '500',
+    opacity: 0.8,
+  },
+  contentSection: {
+    paddingHorizontal: 28,
+    paddingBottom: 28,
   },
   content: {
-    fontSize: 16,
-    lineHeight: 24,
-    marginBottom: 24,
+    fontSize: 18,
+    lineHeight: 28,
+    letterSpacing: 0.3,
   },
   interpretationSection: {
     borderTopWidth: 1,
-    borderTopColor: '#E2E8F0',
-    paddingTop: 20,
+    paddingTop: 24,
+    paddingHorizontal: 28,
+    paddingBottom: 28,
+  },
+  interpretationHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+    marginBottom: 16,
+  },
+  iconContainer: {
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   sectionTitle: {
-    fontSize: 18,
+    fontSize: 20,
     fontWeight: 'bold',
-    marginBottom: 12,
+  },
+  interpretationContent: {
+    borderRadius: 16,
+    padding: 20,
   },
   interpretation: {
-    fontSize: 15,
-    lineHeight: 22,
+    fontSize: 16,
+    lineHeight: 26,
+    letterSpacing: 0.2,
   },
 });
