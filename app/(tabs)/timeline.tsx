@@ -5,7 +5,9 @@ import {
   TouchableOpacity,
   Alert,
   RefreshControl,
+  View,
 } from 'react-native';
+import { LinearGradient } from 'expo-linear-gradient';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { router } from 'expo-router';
 import { useFocusEffect } from '@react-navigation/native';
@@ -122,15 +124,23 @@ export default function TimelineScreen() {
   const groupedDreams = groupDreamsByMonth(filteredDreams);
 
   return (
-    <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
-      <ThemedView style={styles.header}>
-        <ThemedText type="title" style={[styles.title, { color: colors.primary }]}>
-          타임라인
-        </ThemedText>
-        <ThemedText style={[styles.subtitle, { color: colors.icon }]}>
-          기록된 꿈들을 시간순으로 확인해보세요
-        </ThemedText>
-      </ThemedView>
+    <SafeAreaView style={styles.container}>
+      <LinearGradient
+        colors={colors.backgroundGradient}
+        style={styles.gradientBackground}
+        start={{ x: 0, y: 0 }}
+        end={{ x: 0, y: 1 }}
+      >
+        <ThemedView style={styles.header}>
+          <ThemedView style={styles.headerLeft}>
+            <ThemedText type="title" style={[styles.headerTitle, { color: colors.primary }]}>
+              타임라인
+            </ThemedText>
+          </ThemedView>
+          <ThemedView style={styles.headerRight}>
+            <IconSymbol name="clock.fill" size={20} color={colors.icon} />
+          </ThemedView>
+        </ThemedView>
 
       <ThemedView style={styles.filterContainer}>
         <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.filterScrollView}>
@@ -263,7 +273,8 @@ export default function TimelineScreen() {
             </ThemedView>
           ))
         )}
-      </ScrollView>
+        </ScrollView>
+      </LinearGradient>
     </SafeAreaView>
   );
 }
@@ -272,19 +283,29 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
   },
+  gradientBackground: {
+    flex: 1,
+  },
   header: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
     paddingHorizontal: 20,
     paddingVertical: 20,
+  },
+  headerLeft: {
+    flexDirection: 'row',
     alignItems: 'center',
+    flex: 1,
   },
-  title: {
-    fontSize: 28,
+  headerTitle: {
+    fontSize: 22,
     fontWeight: 'bold',
-    marginBottom: 8,
   },
-  subtitle: {
-    fontSize: 16,
-    textAlign: 'center',
+  headerRight: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 15,
   },
   filterContainer: {
     paddingVertical: 15,

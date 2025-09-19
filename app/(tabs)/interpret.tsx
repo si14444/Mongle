@@ -5,7 +5,11 @@ import {
   TouchableOpacity,
   Alert,
   ActivityIndicator,
+  KeyboardAvoidingView,
+  Platform,
+  View,
 } from 'react-native';
+import { LinearGradient } from 'expo-linear-gradient';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { ThemedText } from '@/components/themed-text';
@@ -85,17 +89,29 @@ export default function InterpretScreen() {
   };
 
   return (
-    <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
-      <ThemedView style={styles.header}>
-        <ThemedText type="title" style={[styles.title, { color: colors.primary }]}>
-          꿈 해석
-        </ThemedText>
-        <ThemedText style={[styles.subtitle, { color: colors.icon }]}>
-          기록한 꿈을 선택하여 AI 해석을 받아보세요
-        </ThemedText>
-      </ThemedView>
+    <SafeAreaView style={styles.container}>
+      <LinearGradient
+        colors={colors.backgroundGradient}
+        style={styles.gradientBackground}
+        start={{ x: 0, y: 0 }}
+        end={{ x: 0, y: 1 }}
+      >
+        <KeyboardAvoidingView
+          behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+          style={styles.keyboardAvoidingView}
+        >
+          <ThemedView style={styles.header}>
+            <ThemedView style={styles.headerLeft}>
+              <ThemedText type="title" style={[styles.headerTitle, { color: colors.primary }]}>
+                꿈 해석
+              </ThemedText>
+            </ThemedView>
+            <ThemedView style={styles.headerRight}>
+              <IconSymbol name="lightbulb.fill" size={20} color={colors.icon} />
+            </ThemedView>
+          </ThemedView>
 
-      <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
+          <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
         {dreams.length === 0 ? (
           <ThemedView style={styles.emptyState}>
             <IconSymbol name="brain" size={48} color={colors.icon} />
@@ -243,7 +259,9 @@ export default function InterpretScreen() {
             )}
           </>
         )}
-      </ScrollView>
+          </ScrollView>
+        </KeyboardAvoidingView>
+      </LinearGradient>
     </SafeAreaView>
   );
 }
@@ -252,19 +270,32 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
   },
+  gradientBackground: {
+    flex: 1,
+  },
+  keyboardAvoidingView: {
+    flex: 1,
+  },
   header: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
     paddingHorizontal: 20,
     paddingVertical: 20,
+  },
+  headerLeft: {
+    flexDirection: 'row',
     alignItems: 'center',
+    flex: 1,
   },
-  title: {
-    fontSize: 28,
+  headerTitle: {
+    fontSize: 22,
     fontWeight: 'bold',
-    marginBottom: 8,
   },
-  subtitle: {
-    fontSize: 16,
-    textAlign: 'center',
+  headerRight: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 15,
   },
   content: {
     flex: 1,
