@@ -1,16 +1,16 @@
-import React, { useState, useEffect } from 'react';
-import { StyleSheet, ScrollView, TouchableOpacity, Alert, Dimensions } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
-import { SafeAreaView } from 'react-native-safe-area-context';
 import { router } from 'expo-router';
+import React, { useEffect, useState } from 'react';
+import { Image, ScrollView, StyleSheet, TouchableOpacity } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
+import { IconSymbol } from '@/components/ui/icon-symbol';
 import { Colors } from '@/constants/theme';
 import { useColorScheme } from '@/hooks/use-color-scheme';
 import { DreamService } from '@/services/dreamService';
 import { Dream, DreamStats } from '@/types/dream';
-import { IconSymbol } from '@/components/ui/icon-symbol';
 
 export default function HomeScreen() {
   const colorScheme = useColorScheme();
@@ -68,27 +68,17 @@ export default function HomeScreen() {
               end={{ x: 1, y: 1 }}
             >
               <ThemedView style={styles.header}>
-                <ThemedView style={styles.titleContainer}>
-                  <ThemedView style={styles.titleWrapper}>
-                    <ThemedText style={[styles.titleEmoji]}>🌙</ThemedText>
-                    <ThemedView style={styles.titleTextContainer}>
-                      <ThemedText type="title" style={[styles.title, { color: colors.primary }]}>
-                        몽글
-                      </ThemedText>
-                      <ThemedText style={[styles.titleSubtext, { color: colors.accent }]}>
-                        Dream Journal
-                      </ThemedText>
-                    </ThemedView>
-                    <ThemedText style={[styles.titleEmoji]}>✨</ThemedText>
-                  </ThemedView>
-                </ThemedView>
                 <ThemedText style={[styles.subtitle, { color: colors.icon }]}>
                   당신의 꿈을 기록하고 해석해보세요
                 </ThemedText>
-                <ThemedView style={styles.decorativeElements}>
-                  <ThemedView style={[styles.floatingDot, { backgroundColor: colors.secondary }]} />
-                  <ThemedView style={[styles.floatingDot, styles.floatingDot2, { backgroundColor: colors.accent + '40' }]} />
-                  <ThemedView style={[styles.floatingDot, styles.floatingDot3, { backgroundColor: colors.positive + '30' }]} />
+                <ThemedView style={styles.appIconContainer}>
+                  <ThemedView style={styles.iconWrapper}>
+                    <Image
+                      source={require('@/assets/images/icon.png')}
+                      style={styles.appIcon}
+                    />
+                    <ThemedView style={styles.iconGlow} />
+                  </ThemedView>
                 </ThemedView>
               </ThemedView>
             </LinearGradient>
@@ -125,9 +115,6 @@ export default function HomeScreen() {
                   start={{ x: 0, y: 0 }}
                   end={{ x: 1, y: 1 }}
                 >
-                  <ThemedView style={[styles.statIconContainer, { backgroundColor: colors.positive + '20' }]}>
-                    <ThemedText style={styles.statEmoji}>🌟</ThemedText>
-                  </ThemedView>
                   <ThemedText type="defaultSemiBold" style={[styles.statNumber, { color: colors.primary }]}>
                     {stats.totalDreams}
                   </ThemedText>
@@ -140,9 +127,6 @@ export default function HomeScreen() {
                   start={{ x: 0, y: 0 }}
                   end={{ x: 1, y: 1 }}
                 >
-                  <ThemedView style={[styles.statIconContainer, { backgroundColor: colors.accent + '20' }]}>
-                    <ThemedText style={styles.statEmoji}>📅</ThemedText>
-                  </ThemedView>
                   <ThemedText type="defaultSemiBold" style={[styles.statNumber, { color: colors.primary }]}>
                     {stats.thisWeek}
                   </ThemedText>
@@ -155,9 +139,6 @@ export default function HomeScreen() {
                   start={{ x: 0, y: 0 }}
                   end={{ x: 1, y: 1 }}
                 >
-                  <ThemedView style={[styles.statIconContainer, { backgroundColor: colors.secondary + '40' }]}>
-                    <ThemedText style={styles.statEmoji}>🗓️</ThemedText>
-                  </ThemedView>
                   <ThemedText type="defaultSemiBold" style={[styles.statNumber, { color: colors.primary }]}>
                     {stats.thisMonth}
                   </ThemedText>
@@ -179,7 +160,9 @@ export default function HomeScreen() {
         }]}>
           <ThemedView style={styles.sectionHeader}>
             <ThemedView style={styles.sectionHeaderWithIcon}>
-              <IconSymbol name="moon.stars.fill" size={20} color={colors.primary} />
+              <ThemedView style={[styles.iconContainer, { backgroundColor: colors.primary + '15' }]}>
+                <IconSymbol name="moon.stars.fill" size={18} color={colors.primary} />
+              </ThemedView>
               <ThemedText type="subtitle" style={[styles.sectionTitle, { color: colors.primary }]}>
                 최근 꿈
               </ThemedText>
@@ -359,6 +342,7 @@ const styles = StyleSheet.create({
   },
   headerContainer: {
     marginBottom: 20,
+    marginTop: 20,
   },
   headerGradient: {
     borderRadius: 24,
@@ -445,7 +429,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: 12,
-    marginBottom: 24,
+    marginBottom: 20,
   },
   iconContainer: {
     width: 32,
@@ -517,7 +501,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     paddingHorizontal: 16,
-    paddingVertical: 10,
+    paddingVertical: 8,
     gap: 6,
   },
   seeAllText: {
@@ -652,5 +636,40 @@ const styles = StyleSheet.create({
   quickRecordText: {
     fontSize: 17,
     fontWeight: '600',
+  },
+  appIconContainer: {
+    alignItems: 'center',
+    marginTop: 10,
+    marginBottom: 4,
+  },
+  iconWrapper: {
+    position: 'relative',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  appIcon: {
+    width: 72,
+    height: 72,
+    borderRadius: 18,
+    shadowColor: '#1E3A8A',
+    shadowOffset: { width: 0, height: 6 },
+    shadowOpacity: 0.3,
+    shadowRadius: 12,
+    elevation: 10,
+    borderWidth: 3,
+    borderColor: 'rgba(255, 255, 255, 0.8)',
+  },
+  iconGlow: {
+    position: 'absolute',
+    width: 84,
+    height: 84,
+    borderRadius: 21,
+    backgroundColor: 'rgba(30, 58, 138, 0.1)',
+    zIndex: -1,
+    shadowColor: '#1E3A8A',
+    shadowOffset: { width: 0, height: 0 },
+    shadowOpacity: 0.4,
+    shadowRadius: 20,
+    elevation: 5,
   },
 });
