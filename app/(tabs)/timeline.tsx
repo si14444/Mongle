@@ -1,40 +1,42 @@
-import React, { useState, useMemo } from 'react';
+import { useFocusEffect } from "@react-navigation/native";
+import { LinearGradient } from "expo-linear-gradient";
+import { router } from "expo-router";
+import React, { useMemo, useState } from "react";
 import {
-  StyleSheet,
-  ScrollView,
-  TouchableOpacity,
   Alert,
   RefreshControl,
+  ScrollView,
+  StyleSheet,
   TextInput,
+  TouchableOpacity,
   View,
-} from 'react-native';
-import { LinearGradient } from 'expo-linear-gradient';
-import { SafeAreaView } from 'react-native-safe-area-context';
-import { router } from 'expo-router';
-import { useFocusEffect } from '@react-navigation/native';
+} from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 
-import { ThemedText } from '@/components/themed-text';
-import { ThemedView } from '@/components/themed-view';
-import { Colors } from '@/constants/theme';
-import { useColorScheme } from '@/hooks/use-color-scheme';
-import { useDreams, useDeleteDream } from '@/hooks/useDreams';
-import { Dream } from '@/types/dream';
-import { IconSymbol } from '@/components/ui/icon-symbol';
+import { ThemedText } from "@/components/themed-text";
+import { ThemedView } from "@/components/themed-view";
+import { IconSymbol } from "@/components/ui/icon-symbol";
+import { Colors } from "@/constants/theme";
+import { useColorScheme } from "@/hooks/use-color-scheme";
+import { useDeleteDream, useDreams } from "@/hooks/useDreams";
+import { Dream } from "@/types/dream";
 
 export default function TimelineScreen() {
   const colorScheme = useColorScheme();
-  const colors = Colors[colorScheme ?? 'light'];
+  const colors = Colors[colorScheme ?? "light"];
 
   const { data: dreams = [], refetch, isRefetching } = useDreams();
   const deleteDreamMutation = useDeleteDream();
-  const [selectedFilter, setSelectedFilter] = useState<'all' | 'positive' | 'negative' | 'neutral'>('all');
-  const [searchQuery, setSearchQuery] = useState('');
+  const [selectedFilter, setSelectedFilter] = useState<
+    "all" | "positive" | "negative" | "neutral"
+  >("all");
+  const [searchQuery, setSearchQuery] = useState("");
 
   const filters = [
-    { key: 'all', label: '전체', icon: 'calendar' },
-    { key: 'positive', label: '긍정적', icon: 'heart.fill' },
-    { key: 'neutral', label: '중성적', icon: 'minus' },
-    { key: 'negative', label: '부정적', icon: 'cloud' },
+    { key: "all", label: "전체", icon: "calendar" },
+    { key: "positive", label: "긍정적", icon: "heart.fill" },
+    { key: "neutral", label: "중성적", icon: "minus" },
+    { key: "negative", label: "부정적", icon: "cloud" },
   ] as const;
 
   // Refetch when tab is focused
@@ -49,15 +51,16 @@ export default function TimelineScreen() {
     let filtered = dreams;
 
     // Filter by emotion
-    if (selectedFilter !== 'all') {
-      filtered = filtered.filter(dream => dream.emotion === selectedFilter);
+    if (selectedFilter !== "all") {
+      filtered = filtered.filter((dream) => dream.emotion === selectedFilter);
     }
 
     // Filter by search query
     if (searchQuery.trim()) {
-      filtered = filtered.filter(dream =>
-        dream.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        dream.content.toLowerCase().includes(searchQuery.toLowerCase())
+      filtered = filtered.filter(
+        (dream) =>
+          dream.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+          dream.content.toLowerCase().includes(searchQuery.toLowerCase())
       );
     }
 
@@ -73,25 +76,21 @@ export default function TimelineScreen() {
   };
 
   const handleDeleteDream = (dreamId: string) => {
-    Alert.alert(
-      '꿈 삭제',
-      '이 꿈을 삭제하시겠습니까?',
-      [
-        { text: '취소', style: 'cancel' },
-        {
-          text: '삭제',
-          style: 'destructive',
-          onPress: () => {
-            deleteDreamMutation.mutate(dreamId, {
-              onError: (error) => {
-                console.error('Failed to delete dream:', error);
-                Alert.alert('오류', '꿈을 삭제하는 중 오류가 발생했습니다.');
-              },
-            });
-          },
+    Alert.alert("꿈 삭제", "이 꿈을 삭제하시겠습니까?", [
+      { text: "취소", style: "cancel" },
+      {
+        text: "삭제",
+        style: "destructive",
+        onPress: () => {
+          deleteDreamMutation.mutate(dreamId, {
+            onError: (error) => {
+              console.error("Failed to delete dream:", error);
+              Alert.alert("오류", "꿈을 삭제하는 중 오류가 발생했습니다.");
+            },
+          });
         },
-      ]
-    );
+      },
+    ]);
   };
 
   const formatDate = (dateString: string) => {
@@ -99,30 +98,36 @@ export default function TimelineScreen() {
     return {
       month: `${date.getMonth() + 1}월`,
       day: date.getDate(),
-      weekday: ['일', '월', '화', '수', '목', '금', '토'][date.getDay()],
+      weekday: ["일", "월", "화", "수", "목", "금", "토"][date.getDay()],
     };
   };
 
   const getEmotionColor = (emotion?: string) => {
     switch (emotion) {
-      case 'positive': return colors.positive;
-      case 'negative': return colors.negative;
-      default: return colors.neutral;
+      case "positive":
+        return colors.positive;
+      case "negative":
+        return colors.negative;
+      default:
+        return colors.neutral;
     }
   };
 
   const getEmotionIcon = (emotion?: string) => {
     switch (emotion) {
-      case 'positive': return 'heart.fill';
-      case 'negative': return 'cloud.fill';
-      default: return 'minus.circle.fill';
+      case "positive":
+        return "heart.fill";
+      case "negative":
+        return "cloud.fill";
+      default:
+        return "minus.circle.fill";
     }
   };
 
   const groupDreamsByMonth = (dreams: Dream[]) => {
     const grouped: { [key: string]: Dream[] } = {};
 
-    dreams.forEach(dream => {
+    dreams.forEach((dream) => {
       const date = new Date(dream.date);
       const monthKey = `${date.getFullYear()}년 ${date.getMonth() + 1}월`;
 
@@ -147,7 +152,10 @@ export default function TimelineScreen() {
       >
         <ThemedView style={styles.header}>
           <ThemedView style={styles.headerLeft}>
-            <ThemedText type="title" style={[styles.headerTitle, { color: colors.primary }]}>
+            <ThemedText
+              type="title"
+              style={[styles.headerTitle, { color: colors.primary }]}
+            >
               타임라인
             </ThemedText>
           </ThemedView>
@@ -157,16 +165,21 @@ export default function TimelineScreen() {
         </ThemedView>
 
         {/* Search Bar */}
-        <ThemedView style={[styles.searchContainer, {
-          backgroundColor: colors.card,
-          shadowColor: colors.cardShadow,
-          shadowOffset: { width: 0, height: 2 },
-          shadowOpacity: 1,
-          shadowRadius: 8,
-          elevation: 4,
-        }]}>
+        <ThemedView
+          style={[
+            styles.searchContainer,
+            {
+              backgroundColor: colors.card,
+              shadowColor: colors.cardShadow,
+              shadowOffset: { width: 0, height: 2 },
+              shadowOpacity: 1,
+              shadowRadius: 8,
+              elevation: 4,
+            },
+          ]}
+        >
           <View style={styles.searchInputContainer}>
-            <IconSymbol name="magnifyingglass" size={16} color={colors.icon} />
+            <IconSymbol name="magnifyingglass.circle" size={16} color={colors.icon} />
             <TextInput
               style={[styles.searchInput, { color: colors.text }]}
               value={searchQuery}
@@ -175,144 +188,216 @@ export default function TimelineScreen() {
               placeholderTextColor={colors.icon}
             />
             {searchQuery.length > 0 && (
-              <TouchableOpacity onPress={() => setSearchQuery('')}>
-                <IconSymbol name="xmark.circle.fill" size={16} color={colors.icon} />
+              <TouchableOpacity onPress={() => setSearchQuery("")}>
+                <IconSymbol
+                  name="xmark.circle.fill"
+                  size={16}
+                  color={colors.icon}
+                />
               </TouchableOpacity>
             )}
           </View>
         </ThemedView>
 
-      <ThemedView style={styles.filterContainer}>
-        <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.filterScrollView}>
-          {filters.map((filter) => (
-            <TouchableOpacity
-              key={filter.key}
-              style={[
-                styles.filterButton,
-                {
-                  backgroundColor: selectedFilter === filter.key ? colors.primary : 'transparent',
-                  borderColor: colors.border,
-                }
-              ]}
-              onPress={() => setSelectedFilter(filter.key)}
-            >
-              <IconSymbol
-                name={filter.icon}
-                size={16}
-                color={selectedFilter === filter.key ? 'white' : colors.icon}
-              />
-              <ThemedText
+        <ThemedView style={styles.filterContainer}>
+          <ScrollView
+            horizontal
+            showsHorizontalScrollIndicator={false}
+            contentContainerStyle={styles.filterScrollView}
+          >
+            {filters.map((filter) => (
+              <TouchableOpacity
+                key={filter.key}
                 style={[
-                  styles.filterText,
+                  styles.filterButton,
                   {
-                    color: selectedFilter === filter.key ? 'white' : colors.text,
-                  }
+                    backgroundColor:
+                      selectedFilter === filter.key
+                        ? colors.primary
+                        : "transparent",
+                    borderColor: colors.border,
+                  },
                 ]}
+                onPress={() => setSelectedFilter(filter.key)}
               >
-                {filter.label}
-              </ThemedText>
-            </TouchableOpacity>
-          ))}
-        </ScrollView>
-      </ThemedView>
+                <IconSymbol
+                  name={filter.icon}
+                  size={16}
+                  color={selectedFilter === filter.key ? "white" : colors.icon}
+                />
+                <ThemedText
+                  style={[
+                    styles.filterText,
+                    {
+                      color:
+                        selectedFilter === filter.key ? "white" : colors.text,
+                    },
+                  ]}
+                >
+                  {filter.label}
+                </ThemedText>
+              </TouchableOpacity>
+            ))}
+          </ScrollView>
+        </ThemedView>
 
-      <ScrollView
-        style={styles.content}
-        refreshControl={
-          <RefreshControl refreshing={isRefetching} onRefresh={handleRefresh} />
-        }
-        showsVerticalScrollIndicator={false}
-      >
-        {filteredDreams.length === 0 ? (
-          <ThemedView style={styles.emptyState}>
-            <IconSymbol name="calendar" size={48} color={colors.icon} />
-            <ThemedText style={[styles.emptyText, { color: colors.icon }]}>
-              {selectedFilter === 'all' ? '기록된 꿈이 없습니다' : '해당하는 꿈이 없습니다'}
-            </ThemedText>
-            <TouchableOpacity
-              style={[styles.recordButton, { backgroundColor: colors.primary }]}
-              onPress={() => router.push('/(tabs)/record')}
-            >
-              <ThemedText style={[styles.recordButtonText, { color: 'white' }]}>
-                꿈 기록하기
+        <ScrollView
+          style={styles.content}
+          refreshControl={
+            <RefreshControl
+              refreshing={isRefetching}
+              onRefresh={handleRefresh}
+            />
+          }
+          showsVerticalScrollIndicator={false}
+        >
+          {filteredDreams.length === 0 ? (
+            <ThemedView style={styles.emptyState}>
+              <IconSymbol name="calendar" size={48} color={colors.icon} />
+              <ThemedText style={[styles.emptyText, { color: colors.icon }]}>
+                {selectedFilter === "all"
+                  ? "기록된 꿈이 없습니다"
+                  : "해당하는 꿈이 없습니다"}
               </ThemedText>
-            </TouchableOpacity>
-          </ThemedView>
-        ) : (
-          Object.entries(groupedDreams).map(([monthKey, monthDreams]) => (
-            <ThemedView key={monthKey} style={styles.monthSection}>
-              <ThemedText type="subtitle" style={[styles.monthTitle, { color: colors.primary }]}>
-                {monthKey}
-              </ThemedText>
+              <TouchableOpacity
+                style={[
+                  styles.recordButton,
+                  { backgroundColor: colors.primary },
+                ]}
+                onPress={() => router.push("/(tabs)/record")}
+              >
+                <ThemedText
+                  style={[styles.recordButtonText, { color: "white" }]}
+                >
+                  꿈 기록하기
+                </ThemedText>
+              </TouchableOpacity>
+            </ThemedView>
+          ) : (
+            Object.entries(groupedDreams).map(([monthKey, monthDreams]) => (
+              <ThemedView key={monthKey} style={styles.monthSection}>
+                <ThemedText
+                  type="subtitle"
+                  style={[styles.monthTitle, { color: colors.primary }]}
+                >
+                  {monthKey}
+                </ThemedText>
 
-              {monthDreams.map((dream, index) => {
-                const dateInfo = formatDate(dream.date);
-                return (
-                  <ThemedView key={dream.id} style={styles.timelineItem}>
-                    <ThemedView style={styles.dateContainer}>
-                      <ThemedView style={[styles.dateCircle, { backgroundColor: colors.primary }]}>
-                        <ThemedText style={[styles.dateDay, { color: 'white' }]}>
-                          {dateInfo.day}
-                        </ThemedText>
-                      </ThemedView>
-                      <ThemedText style={[styles.dateWeekday, { color: colors.icon }]}>
-                        {dateInfo.weekday}
-                      </ThemedText>
-                      {index < monthDreams.length - 1 && (
-                        <ThemedView style={[styles.timeline, { backgroundColor: colors.border }]} />
-                      )}
-                    </ThemedView>
-
-                    <TouchableOpacity
-                      style={[styles.dreamCard, { backgroundColor: colors.card, borderColor: colors.border }]}
-                      onPress={() => handleDreamPress(dream)}
-                      onLongPress={() => handleDeleteDream(dream.id)}
-                    >
-                      <View style={styles.dreamHeader}>
-                        <View style={styles.dreamTitleContainer}>
-                          <ThemedText type="defaultSemiBold" style={[styles.dreamTitle, { color: colors.text }]}>
-                            {dream.title}
+                {monthDreams.map((dream, index) => {
+                  const dateInfo = formatDate(dream.date);
+                  return (
+                    <ThemedView key={dream.id} style={styles.timelineItem}>
+                      <ThemedView style={styles.dateContainer}>
+                        <ThemedView
+                          style={[
+                            styles.dateCircle,
+                            { backgroundColor: colors.primary },
+                          ]}
+                        >
+                          <ThemedText
+                            style={[styles.dateDay, { color: "white" }]}
+                          >
+                            {dateInfo.day}
                           </ThemedText>
-                          <IconSymbol
-                            name={getEmotionIcon(dream.emotion)}
-                            size={16}
-                            color={getEmotionColor(dream.emotion)}
+                        </ThemedView>
+                        <ThemedText
+                          style={[styles.dateWeekday, { color: colors.icon }]}
+                        >
+                          {dateInfo.weekday}
+                        </ThemedText>
+                        {index < monthDreams.length - 1 && (
+                          <ThemedView
+                            style={[
+                              styles.timeline,
+                              { backgroundColor: colors.border },
+                            ]}
                           />
-                        </View>
-                        {dream.interpretation && (
-                          <ThemedView style={[styles.interpretedBadge, { backgroundColor: colors.positive }]}>
-                            <ThemedText style={[styles.interpretedText, { color: 'white' }]}>
-                              해석됨
-                            </ThemedText>
-                          </ThemedView>
                         )}
-                      </View>
+                      </ThemedView>
 
-                      <ThemedText
-                        style={[styles.dreamContent, { color: colors.icon }]}
-                        numberOfLines={3}
+                      <TouchableOpacity
+                        style={[
+                          styles.dreamCard,
+                          {
+                            backgroundColor: colors.card,
+                            borderColor: colors.border,
+                          },
+                        ]}
+                        onPress={() => handleDreamPress(dream)}
+                        onLongPress={() => handleDeleteDream(dream.id)}
                       >
-                        {dream.content}
-                      </ThemedText>
-
-                      {dream.tags && dream.tags.length > 0 && (
-                        <ThemedView style={styles.tagsContainer}>
-                          {dream.tags.slice(0, 3).map((tag, tagIndex) => (
-                            <ThemedView key={tagIndex} style={[styles.tag, { backgroundColor: colors.secondary }]}>
-                              <ThemedText style={[styles.tagText, { color: colors.primary }]}>
-                                {tag}
+                        <View style={styles.dreamHeader}>
+                          <View style={styles.dreamTitleContainer}>
+                            <ThemedText
+                              type="defaultSemiBold"
+                              style={[
+                                styles.dreamTitle,
+                                { color: colors.text },
+                              ]}
+                            >
+                              {dream.title}
+                            </ThemedText>
+                            <IconSymbol
+                              name={getEmotionIcon(dream.emotion)}
+                              size={16}
+                              color={getEmotionColor(dream.emotion)}
+                            />
+                          </View>
+                          {dream.interpretation && (
+                            <ThemedView
+                              style={[
+                                styles.interpretedBadge,
+                                { backgroundColor: colors.positive },
+                              ]}
+                            >
+                              <ThemedText
+                                style={[
+                                  styles.interpretedText,
+                                  { color: "white" },
+                                ]}
+                              >
+                                해석됨
                               </ThemedText>
                             </ThemedView>
-                          ))}
-                        </ThemedView>
-                      )}
-                    </TouchableOpacity>
-                  </ThemedView>
-                );
-              })}
-            </ThemedView>
-          ))
-        )}
+                          )}
+                        </View>
+
+                        <ThemedText
+                          style={[styles.dreamContent, { color: colors.icon }]}
+                          numberOfLines={3}
+                        >
+                          {dream.content}
+                        </ThemedText>
+
+                        {dream.tags && dream.tags.length > 0 && (
+                          <ThemedView style={styles.tagsContainer}>
+                            {dream.tags.slice(0, 3).map((tag, tagIndex) => (
+                              <ThemedView
+                                key={tagIndex}
+                                style={[
+                                  styles.tag,
+                                  { backgroundColor: colors.secondary },
+                                ]}
+                              >
+                                <ThemedText
+                                  style={[
+                                    styles.tagText,
+                                    { color: colors.primary },
+                                  ]}
+                                >
+                                  {tag}
+                                </ThemedText>
+                              </ThemedView>
+                            ))}
+                          </ThemedView>
+                        )}
+                      </TouchableOpacity>
+                    </ThemedView>
+                  );
+                })}
+              </ThemedView>
+            ))
+          )}
         </ScrollView>
       </LinearGradient>
     </SafeAreaView>
@@ -327,41 +412,41 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   header: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
     paddingHorizontal: 20,
     paddingVertical: 20,
   },
   headerLeft: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
     flex: 1,
   },
   headerTitle: {
     fontSize: 22,
-    fontWeight: 'bold',
+    fontWeight: "bold",
   },
   headerRight: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
     gap: 15,
   },
   searchContainer: {
     marginHorizontal: 20,
     marginBottom: 20,
     borderRadius: 16,
-    padding: 12,
+    padding: 16,
   },
   searchInputContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
     gap: 12,
   },
   searchInput: {
     flex: 1,
     fontSize: 16,
-    paddingVertical: 0,
+    paddingVertical: 4,
   },
   filterContainer: {
     paddingVertical: 15,
@@ -374,8 +459,8 @@ const styles = StyleSheet.create({
     gap: 10,
   },
   filterButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
     paddingHorizontal: 16,
     paddingVertical: 8,
     borderRadius: 20,
@@ -384,14 +469,14 @@ const styles = StyleSheet.create({
   },
   filterText: {
     fontSize: 14,
-    fontWeight: '600',
+    fontWeight: "600",
   },
   content: {
     flex: 1,
     paddingHorizontal: 20,
   },
   emptyState: {
-    alignItems: 'center',
+    alignItems: "center",
     paddingVertical: 60,
   },
   emptyText: {
@@ -406,22 +491,22 @@ const styles = StyleSheet.create({
   },
   recordButtonText: {
     fontSize: 16,
-    fontWeight: '600',
+    fontWeight: "600",
   },
   monthSection: {
     marginBottom: 30,
   },
   monthTitle: {
     fontSize: 18,
-    fontWeight: 'bold',
+    fontWeight: "bold",
     marginBottom: 20,
   },
   timelineItem: {
-    flexDirection: 'row',
+    flexDirection: "row",
     marginBottom: 20,
   },
   dateContainer: {
-    alignItems: 'center',
+    alignItems: "center",
     width: 60,
     marginRight: 15,
   },
@@ -429,13 +514,13 @@ const styles = StyleSheet.create({
     width: 40,
     height: 40,
     borderRadius: 20,
-    alignItems: 'center',
-    justifyContent: 'center',
+    alignItems: "center",
+    justifyContent: "center",
     marginBottom: 4,
   },
   dateDay: {
     fontSize: 16,
-    fontWeight: 'bold',
+    fontWeight: "bold",
   },
   dateWeekday: {
     fontSize: 12,
@@ -452,15 +537,15 @@ const styles = StyleSheet.create({
     padding: 16,
   },
   dreamHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'flex-start',
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "flex-start",
     marginBottom: 8,
   },
   dreamTitleContainer: {
     flex: 1,
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
     gap: 8,
   },
   dreamTitle: {
@@ -474,7 +559,7 @@ const styles = StyleSheet.create({
   },
   interpretedText: {
     fontSize: 10,
-    fontWeight: '600',
+    fontWeight: "600",
   },
   dreamContent: {
     fontSize: 14,
@@ -482,8 +567,8 @@ const styles = StyleSheet.create({
     marginBottom: 12,
   },
   tagsContainer: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
+    flexDirection: "row",
+    flexWrap: "wrap",
     gap: 6,
   },
   tag: {
@@ -493,6 +578,6 @@ const styles = StyleSheet.create({
   },
   tagText: {
     fontSize: 12,
-    fontWeight: '600',
+    fontWeight: "600",
   },
 });

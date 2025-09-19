@@ -40,20 +40,6 @@ export default function RecordScreen() {
     { key: 'negative', label: '부정적', icon: '😔', color: colors.negative },
   ] as const;
 
-  useEffect(() => {
-    return () => {
-      if (autoSaveTimeoutRef.current) {
-        clearTimeout(autoSaveTimeoutRef.current);
-      }
-    };
-  }, []);
-
-  useEffect(() => {
-    if (title || content) {
-      autoSave();
-    }
-  }, [title, content, selectedEmotion, autoSave]);
-
   const autoSave = useCallback(() => {
     if (autoSaveTimeoutRef.current) {
       clearTimeout(autoSaveTimeoutRef.current);
@@ -74,6 +60,20 @@ export default function RecordScreen() {
       }
     }, 2000);
   }, [title, content]);
+
+  useEffect(() => {
+    return () => {
+      if (autoSaveTimeoutRef.current) {
+        clearTimeout(autoSaveTimeoutRef.current);
+      }
+    };
+  }, []);
+
+  useEffect(() => {
+    if (title || content) {
+      autoSave();
+    }
+  }, [title, content, selectedEmotion, autoSave]);
 
   const handleSave = () => {
     if (!title.trim()) {
