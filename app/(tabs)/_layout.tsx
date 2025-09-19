@@ -34,14 +34,14 @@ export default function TabLayout() {
         name="interpret"
         options={{
           title: '해석',
-          tabBarIcon: ({ color }) => <IconSymbol size={28} name="brain" color={color} />,
+          tabBarIcon: ({ color }) => <IconSymbol size={28} name="lightbulb" color={color} />,
         }}
       />
       <Tabs.Screen
         name="timeline"
         options={{
           title: '타임라인',
-          tabBarIcon: ({ color }) => <IconSymbol size={28} name="calendar" color={color} />,
+          tabBarIcon: ({ color }) => <IconSymbol size={28} name="clock" color={color} />,
         }}
       />
     </Tabs>

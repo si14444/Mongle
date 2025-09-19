@@ -108,7 +108,7 @@ export default function InterpretScreen() {
           </ThemedView>
         ) : (
           <>
-            <ThemedView style={[styles.section, { backgroundColor: colors.card }]}>
+            <ThemedView style={styles.section}>
               <ThemedText type="subtitle" style={[styles.sectionTitle, { color: colors.primary }]}>
                 꿈 선택하기
               </ThemedText>
@@ -119,7 +119,7 @@ export default function InterpretScreen() {
                     style={[
                       styles.dreamItem,
                       {
-                        backgroundColor: selectedDream?.id === dream.id ? colors.secondary : colors.background,
+                        backgroundColor: selectedDream?.id === dream.id ? colors.secondary : 'transparent',
                         borderColor: selectedDream?.id === dream.id ? colors.primary : colors.border,
                       }
                     ]}
@@ -148,7 +148,7 @@ export default function InterpretScreen() {
             </ThemedView>
 
             {selectedDream && (
-              <ThemedView style={[styles.section, { backgroundColor: colors.card }]}>
+              <ThemedView style={styles.section}>
                 <ThemedView style={styles.selectedDreamHeader}>
                   <ThemedText type="subtitle" style={[styles.sectionTitle, { color: colors.primary }]}>
                     선택된 꿈

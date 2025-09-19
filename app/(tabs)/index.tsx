@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { StyleSheet, ScrollView, TouchableOpacity, Alert } from 'react-native';
+import { StyleSheet, ScrollView, TouchableOpacity, Alert, Dimensions } from 'react-native';
+import { LinearGradient } from 'expo-linear-gradient';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { router } from 'expo-router';
 
@@ -34,7 +35,7 @@ export default function HomeScreen() {
   };
 
   const handleDreamPress = (dream: Dream) => {
-    router.push(`/dream/${dream.id}`);
+    router.push(`/dream/${dream.id}` as any);
   };
 
   const formatDate = (dateString: string) => {
@@ -51,114 +52,296 @@ export default function HomeScreen() {
   };
 
   return (
-    <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
-      <ScrollView style={styles.scrollView} showsVerticalScrollIndicator={false}>
-        <ThemedView style={styles.header}>
-          <ThemedText type="title" style={[styles.title, { color: colors.primary }]}>
-            몽글 ✨
-          </ThemedText>
-          <ThemedText style={[styles.subtitle, { color: colors.icon }]}>
-            당신의 꿈을 기록하고 해석해보세요
-          </ThemedText>
-        </ThemedView>
+    <SafeAreaView style={styles.container}>
+      <LinearGradient
+        colors={colors.backgroundGradient}
+        style={styles.gradientBackground}
+        start={{ x: 0, y: 0 }}
+        end={{ x: 0, y: 1 }}
+      >
+        <ScrollView style={styles.scrollView} showsVerticalScrollIndicator={false}>
+          <ThemedView style={styles.headerContainer}>
+            <LinearGradient
+              colors={[colors.primary + '15', 'transparent']}
+              style={styles.headerGradient}
+              start={{ x: 0, y: 0 }}
+              end={{ x: 1, y: 1 }}
+            >
+              <ThemedView style={styles.header}>
+                <ThemedView style={styles.titleContainer}>
+                  <ThemedView style={styles.titleWrapper}>
+                    <ThemedText style={[styles.titleEmoji]}>🌙</ThemedText>
+                    <ThemedView style={styles.titleTextContainer}>
+                      <ThemedText type="title" style={[styles.title, { color: colors.primary }]}>
+                        몽글
+                      </ThemedText>
+                      <ThemedText style={[styles.titleSubtext, { color: colors.accent }]}>
+                        Dream Journal
+                      </ThemedText>
+                    </ThemedView>
+                    <ThemedText style={[styles.titleEmoji]}>✨</ThemedText>
+                  </ThemedView>
+                </ThemedView>
+                <ThemedText style={[styles.subtitle, { color: colors.icon }]}>
+                  당신의 꿈을 기록하고 해석해보세요
+                </ThemedText>
+                <ThemedView style={styles.decorativeElements}>
+                  <ThemedView style={[styles.floatingDot, { backgroundColor: colors.secondary }]} />
+                  <ThemedView style={[styles.floatingDot, styles.floatingDot2, { backgroundColor: colors.accent + '40' }]} />
+                  <ThemedView style={[styles.floatingDot, styles.floatingDot3, { backgroundColor: colors.positive + '30' }]} />
+                </ThemedView>
+              </ThemedView>
+            </LinearGradient>
+          </ThemedView>
 
         {stats && (
-          <ThemedView style={[styles.statsContainer, { backgroundColor: colors.card }]}>
-            <ThemedText type="subtitle" style={[styles.sectionTitle, { color: colors.primary }]}>
-              통계
-            </ThemedText>
-            <ThemedView style={styles.statsGrid}>
-              <ThemedView style={styles.statItem}>
-                <ThemedText type="defaultSemiBold" style={[styles.statNumber, { color: colors.primary }]}>
-                  {stats.totalDreams}
+          <ThemedView style={[styles.statsContainer, {
+            borderWidth: 1,
+            borderColor: colors.border,
+            shadowColor: colors.cardShadow,
+            shadowOffset: { width: 0, height: 8 },
+            shadowOpacity: 1,
+            shadowRadius: 20,
+            elevation: 12,
+          }]}>
+            <LinearGradient
+              colors={[colors.card, colors.background]}
+              style={styles.statsCardGradient}
+              start={{ x: 0, y: 0 }}
+              end={{ x: 0, y: 1 }}
+            >
+              <ThemedView style={styles.sectionHeaderWithIcon}>
+                <ThemedView style={[styles.iconContainer, { backgroundColor: colors.primary + '15' }]}>
+                  <IconSymbol name="chart.bar.fill" size={18} color={colors.primary} />
+                </ThemedView>
+                <ThemedText type="subtitle" style={[styles.sectionTitle, { color: colors.primary }]}>
+                  통계
                 </ThemedText>
-                <ThemedText style={[styles.statLabel, { color: colors.icon }]}>총 꿈</ThemedText>
               </ThemedView>
-              <ThemedView style={styles.statItem}>
-                <ThemedText type="defaultSemiBold" style={[styles.statNumber, { color: colors.primary }]}>
-                  {stats.thisWeek}
-                </ThemedText>
-                <ThemedText style={[styles.statLabel, { color: colors.icon }]}>이번 주</ThemedText>
+              <ThemedView style={styles.statsGrid}>
+                <LinearGradient
+                  colors={[colors.positive + '20', colors.positive + '05']}
+                  style={[styles.statItem, styles.statItemGradient]}
+                  start={{ x: 0, y: 0 }}
+                  end={{ x: 1, y: 1 }}
+                >
+                  <ThemedView style={[styles.statIconContainer, { backgroundColor: colors.positive + '20' }]}>
+                    <ThemedText style={styles.statEmoji}>🌟</ThemedText>
+                  </ThemedView>
+                  <ThemedText type="defaultSemiBold" style={[styles.statNumber, { color: colors.primary }]}>
+                    {stats.totalDreams}
+                  </ThemedText>
+                  <ThemedText style={[styles.statLabel, { color: colors.icon }]}>총 꿈</ThemedText>
+                </LinearGradient>
+
+                <LinearGradient
+                  colors={[colors.accent + '20', colors.accent + '05']}
+                  style={[styles.statItem, styles.statItemGradient]}
+                  start={{ x: 0, y: 0 }}
+                  end={{ x: 1, y: 1 }}
+                >
+                  <ThemedView style={[styles.statIconContainer, { backgroundColor: colors.accent + '20' }]}>
+                    <ThemedText style={styles.statEmoji}>📅</ThemedText>
+                  </ThemedView>
+                  <ThemedText type="defaultSemiBold" style={[styles.statNumber, { color: colors.primary }]}>
+                    {stats.thisWeek}
+                  </ThemedText>
+                  <ThemedText style={[styles.statLabel, { color: colors.icon }]}>이번 주</ThemedText>
+                </LinearGradient>
+
+                <LinearGradient
+                  colors={[colors.secondary + '60', colors.secondary + '20']}
+                  style={[styles.statItem, styles.statItemGradient]}
+                  start={{ x: 0, y: 0 }}
+                  end={{ x: 1, y: 1 }}
+                >
+                  <ThemedView style={[styles.statIconContainer, { backgroundColor: colors.secondary + '40' }]}>
+                    <ThemedText style={styles.statEmoji}>🗓️</ThemedText>
+                  </ThemedView>
+                  <ThemedText type="defaultSemiBold" style={[styles.statNumber, { color: colors.primary }]}>
+                    {stats.thisMonth}
+                  </ThemedText>
+                  <ThemedText style={[styles.statLabel, { color: colors.icon }]}>이번 달</ThemedText>
+                </LinearGradient>
               </ThemedView>
-              <ThemedView style={styles.statItem}>
-                <ThemedText type="defaultSemiBold" style={[styles.statNumber, { color: colors.primary }]}>
-                  {stats.thisMonth}
-                </ThemedText>
-                <ThemedText style={[styles.statLabel, { color: colors.icon }]}>이번 달</ThemedText>
-              </ThemedView>
-            </ThemedView>
+            </LinearGradient>
           </ThemedView>
         )}
 
-        <ThemedView style={[styles.section, { backgroundColor: colors.card }]}>
+        <ThemedView style={[styles.section, {
+          borderWidth: 1,
+          borderColor: colors.border,
+          shadowColor: colors.cardShadow,
+          shadowOffset: { width: 0, height: 4 },
+          shadowOpacity: 1,
+          shadowRadius: 12,
+          elevation: 8,
+        }]}>
           <ThemedView style={styles.sectionHeader}>
-            <ThemedText type="subtitle" style={[styles.sectionTitle, { color: colors.primary }]}>
-              최근 꿈
-            </ThemedText>
-            <TouchableOpacity onPress={() => router.push('/(tabs)/timeline')}>
-              <ThemedText style={[styles.seeAllText, { color: colors.accent }]}>
-                전체보기
+            <ThemedView style={styles.sectionHeaderWithIcon}>
+              <IconSymbol name="moon.stars.fill" size={20} color={colors.primary} />
+              <ThemedText type="subtitle" style={[styles.sectionTitle, { color: colors.primary }]}>
+                최근 꿈
               </ThemedText>
+            </ThemedView>
+            <TouchableOpacity
+              style={styles.seeAllButton}
+              onPress={() => router.push('/(tabs)/timeline')}
+            >
+              <LinearGradient
+                colors={[colors.primary, colors.primaryLight]}
+                style={styles.seeAllGradient}
+                start={{ x: 0, y: 0 }}
+                end={{ x: 1, y: 0 }}
+              >
+                <ThemedText style={[styles.seeAllText, { color: 'white' }]}>
+                  전체보기
+                </ThemedText>
+                <IconSymbol name="chevron.right" size={16} color="white" />
+              </LinearGradient>
             </TouchableOpacity>
           </ThemedView>
 
           {recentDreams.length === 0 ? (
             <ThemedView style={styles.emptyState}>
-              <IconSymbol name="moon.stars" size={48} color={colors.icon} />
-              <ThemedText style={[styles.emptyText, { color: colors.icon }]}>
+              <ThemedView style={[styles.emptyIconContainer, { backgroundColor: colors.secondary + '30' }]}>
+                <IconSymbol name="moon.stars" size={48} color={colors.primary} />
+              </ThemedView>
+              <ThemedText style={[styles.emptyText, { color: colors.text }]}>
                 아직 기록된 꿈이 없습니다
               </ThemedText>
+              <ThemedText style={[styles.emptySubtext, { color: colors.icon }]}>
+                첫 번째 꿈을 기록해보세요
+              </ThemedText>
               <TouchableOpacity
-                style={[styles.recordButton, { backgroundColor: colors.primary }]}
+                style={[styles.recordButton, {
+                  shadowColor: colors.primary,
+                  shadowOffset: { width: 0, height: 4 },
+                  shadowOpacity: 0.3,
+                  shadowRadius: 8,
+                  elevation: 6,
+                }]}
                 onPress={() => router.push('/(tabs)/record')}
               >
-                <ThemedText style={[styles.recordButtonText, { color: 'white' }]}>
-                  첫 꿈 기록하기
-                </ThemedText>
+                <LinearGradient
+                  colors={[colors.primary, colors.primaryLight]}
+                  style={styles.recordButtonGradient}
+                  start={{ x: 0, y: 0 }}
+                  end={{ x: 1, y: 0 }}
+                >
+                  <IconSymbol name="plus" size={20} color="white" />
+                  <ThemedText style={[styles.recordButtonText, { color: 'white' }]}>
+                    첫 꿈 기록하기
+                  </ThemedText>
+                </LinearGradient>
               </TouchableOpacity>
             </ThemedView>
           ) : (
-            recentDreams.map((dream) => (
+            recentDreams.map((dream, index) => (
               <TouchableOpacity
                 key={dream.id}
-                style={[styles.dreamCard, { borderColor: colors.border }]}
+                style={[styles.dreamCard, {
+                  borderWidth: 1,
+                  borderColor: colors.border,
+                  shadowColor: colors.cardShadow,
+                  shadowOffset: { width: 0, height: 4 + index * 2 },
+                  shadowOpacity: 1,
+                  shadowRadius: 12 + index * 2,
+                  elevation: 6 + index,
+                  marginBottom: 20,
+                  transform: [{ scale: 1 }]
+                }]}
                 onPress={() => handleDreamPress(dream)}
               >
-                <ThemedView style={styles.dreamHeader}>
-                  <ThemedText type="defaultSemiBold" style={[styles.dreamTitle, { color: colors.text }]}>
-                    {dream.title}
-                  </ThemedText>
-                  <ThemedView
-                    style={[
-                      styles.emotionIndicator,
-                      { backgroundColor: getEmotionColor(dream.emotion) }
-                    ]}
-                  />
-                </ThemedView>
-                <ThemedText
-                  style={[styles.dreamContent, { color: colors.icon }]}
-                  numberOfLines={2}
+                <LinearGradient
+                  colors={[
+                    colors.card,
+                    getEmotionColor(dream.emotion) + '08',
+                    'transparent'
+                  ]}
+                  style={styles.dreamCardGradient}
+                  start={{ x: 0, y: 0 }}
+                  end={{ x: 1, y: 1 }}
                 >
-                  {dream.content}
-                </ThemedText>
-                <ThemedText style={[styles.dreamDate, { color: colors.icon }]}>
-                  {formatDate(dream.date)}
-                </ThemedText>
+                  <ThemedView style={styles.dreamCardContent}>
+                    <ThemedView style={styles.dreamHeader}>
+                      <ThemedView style={styles.dreamTitleSection}>
+                        <ThemedText type="defaultSemiBold" style={[styles.dreamTitle, { color: colors.text }]}>
+                          {dream.title}
+                        </ThemedText>
+                        <ThemedView style={styles.dreamMeta}>
+                          <ThemedText style={[styles.dreamDate, { color: colors.icon }]}>
+                            {formatDate(dream.date)}
+                          </ThemedText>
+                          <ThemedView
+                            style={[
+                              styles.emotionIndicator,
+                              {
+                                backgroundColor: getEmotionColor(dream.emotion),
+                                shadowColor: getEmotionColor(dream.emotion),
+                                shadowOffset: { width: 0, height: 2 },
+                                shadowOpacity: 0.3,
+                                shadowRadius: 4,
+                                elevation: 2,
+                              }
+                            ]}
+                          />
+                        </ThemedView>
+                      </ThemedView>
+                    </ThemedView>
+                    <ThemedText
+                      style={[styles.dreamContent, { color: colors.text }]}
+                      numberOfLines={3}
+                    >
+                      {dream.content}
+                    </ThemedText>
+                    <ThemedView style={styles.dreamFooter}>
+                      <ThemedView style={styles.dreamTags}>
+                        {dream.interpretation && (
+                          <ThemedView style={[styles.interpretedTag, { borderWidth: 1, borderColor: colors.positive }]}>
+                            <IconSymbol name="sparkles" size={12} color={colors.positive} />
+                            <ThemedText style={[styles.interpretedTagText, { color: colors.positive }]}>
+                              해석됨
+                            </ThemedText>
+                          </ThemedView>
+                        )}
+                      </ThemedView>
+                      <ThemedView style={[styles.chevronContainer, { borderWidth: 1, borderColor: colors.border }]}>
+                        <IconSymbol name="chevron.right" size={16} color={colors.primary} />
+                      </ThemedView>
+                    </ThemedView>
+                  </ThemedView>
+                </LinearGradient>
               </TouchableOpacity>
             ))
           )}
         </ThemedView>
 
         <TouchableOpacity
-          style={[styles.quickRecordButton, { backgroundColor: colors.primary }]}
+          style={[styles.quickRecordButton, {
+            backgroundColor: colors.primary,
+            shadowColor: colors.primary,
+            shadowOffset: { width: 0, height: 4 },
+            shadowOpacity: 0.3,
+            shadowRadius: 12,
+            elevation: 8,
+          }]}
           onPress={() => router.push('/(tabs)/record')}
         >
-          <IconSymbol name="plus" size={24} color="white" />
-          <ThemedText style={[styles.quickRecordText, { color: 'white' }]}>
-            새 꿈 기록하기
-          </ThemedText>
+          <LinearGradient
+            colors={[colors.primary, colors.primaryLight]}
+            style={styles.quickRecordGradient}
+            start={{ x: 0, y: 0 }}
+            end={{ x: 1, y: 0 }}
+          >
+            <IconSymbol name="plus.circle.fill" size={24} color="white" />
+            <ThemedText style={[styles.quickRecordText, { color: 'white' }]}>
+              새 꿈 기록하기
+            </ThemedText>
+          </LinearGradient>
         </TouchableOpacity>
       </ScrollView>
+      </LinearGradient>
     </SafeAreaView>
   );
 }
@@ -167,121 +350,307 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
   },
+  gradientBackground: {
+    flex: 1,
+  },
   scrollView: {
     flex: 1,
     paddingHorizontal: 20,
   },
+  headerContainer: {
+    marginBottom: 20,
+  },
+  headerGradient: {
+    borderRadius: 24,
+    overflow: 'hidden',
+  },
   header: {
-    paddingVertical: 30,
+    paddingVertical: 50,
+    paddingHorizontal: 20,
+    alignItems: 'center',
+    position: 'relative',
+  },
+  titleContainer: {
+    alignItems: 'center',
+    marginBottom: 16,
+  },
+  titleWrapper: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 8,
+  },
+  titleEmoji: {
+    fontSize: 36,
+    marginHorizontal: 12,
+  },
+  titleTextContainer: {
     alignItems: 'center',
   },
   title: {
-    fontSize: 32,
+    fontSize: 42,
     fontWeight: 'bold',
-    marginBottom: 8,
+    letterSpacing: -2,
+  },
+  titleSubtext: {
+    fontSize: 12,
+    fontWeight: '500',
+    letterSpacing: 2,
+    marginTop: 2,
   },
   subtitle: {
     fontSize: 16,
     textAlign: 'center',
+    opacity: 0.8,
+    fontWeight: '500',
+  },
+  decorativeElements: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    pointerEvents: 'none',
+  },
+  floatingDot: {
+    position: 'absolute',
+    width: 8,
+    height: 8,
+    borderRadius: 4,
+    top: '20%',
+    right: '15%',
+  },
+  floatingDot2: {
+    width: 12,
+    height: 12,
+    borderRadius: 6,
+    top: '70%',
+    left: '10%',
+  },
+  floatingDot3: {
+    width: 6,
+    height: 6,
+    borderRadius: 3,
+    top: '40%',
+    left: '80%',
   },
   statsContainer: {
+    borderRadius: 24,
+    overflow: 'hidden',
+    marginBottom: 28,
+  },
+  statsCardGradient: {
+    padding: 28,
+  },
+  sectionHeaderWithIcon: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+    marginBottom: 24,
+  },
+  iconContainer: {
+    width: 32,
+    height: 32,
     borderRadius: 16,
-    padding: 20,
-    marginBottom: 20,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   statsGrid: {
     flexDirection: 'row',
-    justifyContent: 'space-around',
-    marginTop: 15,
+    justifyContent: 'space-between',
+    gap: 16,
   },
   statItem: {
+    flex: 1,
     alignItems: 'center',
+    paddingVertical: 20,
+    paddingHorizontal: 16,
+    borderRadius: 20,
+  },
+  statItemGradient: {
+    overflow: 'hidden',
+  },
+  statIconContainer: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: 12,
+  },
+  statEmoji: {
+    fontSize: 18,
   },
   statNumber: {
-    fontSize: 24,
+    fontSize: 32,
     fontWeight: 'bold',
+    marginBottom: 4,
   },
   statLabel: {
-    fontSize: 14,
-    marginTop: 4,
+    fontSize: 13,
+    fontWeight: '600',
   },
   section: {
-    borderRadius: 16,
-    padding: 20,
-    marginBottom: 20,
+    borderRadius: 20,
+    padding: 24,
+    marginBottom: 24,
   },
   sectionHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: 15,
+    marginBottom: 20,
   },
   sectionTitle: {
-    fontSize: 20,
+    fontSize: 18,
     fontWeight: 'bold',
   },
+  seeAllButton: {
+    borderRadius: 20,
+    overflow: 'hidden',
+    shadowColor: '#1E3A8A',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.25,
+    shadowRadius: 6,
+    elevation: 4,
+  },
+  seeAllGradient: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 16,
+    paddingVertical: 10,
+    gap: 6,
+  },
   seeAllText: {
-    fontSize: 16,
-    fontWeight: '600',
+    fontSize: 14,
+    fontWeight: '700',
+    letterSpacing: 0.5,
   },
   emptyState: {
     alignItems: 'center',
-    paddingVertical: 30,
+    paddingVertical: 50,
+    paddingHorizontal: 20,
+  },
+  emptyIconContainer: {
+    width: 100,
+    height: 100,
+    borderRadius: 50,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: 24,
   },
   emptyText: {
-    fontSize: 16,
-    marginTop: 15,
-    marginBottom: 20,
+    fontSize: 18,
+    fontWeight: '600',
+    marginBottom: 8,
+    textAlign: 'center',
+  },
+  emptySubtext: {
+    fontSize: 14,
+    marginBottom: 32,
+    textAlign: 'center',
   },
   recordButton: {
-    paddingHorizontal: 24,
-    paddingVertical: 12,
     borderRadius: 24,
+    overflow: 'hidden',
+  },
+  recordButtonGradient: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingHorizontal: 32,
+    paddingVertical: 16,
+    gap: 8,
   },
   recordButtonText: {
     fontSize: 16,
     fontWeight: '600',
   },
   dreamCard: {
-    borderWidth: 1,
-    borderRadius: 12,
-    padding: 16,
-    marginBottom: 12,
+    borderRadius: 20,
+    overflow: 'hidden',
+  },
+  dreamCardGradient: {
+    borderRadius: 20,
+  },
+  dreamCardContent: {
+    padding: 24,
   },
   dreamHeader: {
+    marginBottom: 16,
+  },
+  dreamTitleSection: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: 8,
+    alignItems: 'flex-start',
   },
   dreamTitle: {
-    fontSize: 16,
+    fontSize: 18,
+    fontWeight: '700',
     flex: 1,
+    marginRight: 12,
   },
-  emotionIndicator: {
-    width: 12,
-    height: 12,
-    borderRadius: 6,
-  },
-  dreamContent: {
-    fontSize: 14,
-    lineHeight: 20,
-    marginBottom: 8,
+  dreamMeta: {
+    alignItems: 'flex-end',
+    gap: 8,
   },
   dreamDate: {
     fontSize: 12,
+    fontWeight: '500',
+  },
+  emotionIndicator: {
+    width: 16,
+    height: 16,
+    borderRadius: 8,
+  },
+  dreamContent: {
+    fontSize: 15,
+    lineHeight: 24,
+    marginBottom: 20,
+    opacity: 0.9,
+  },
+  dreamFooter: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
+  dreamTags: {
+    flexDirection: 'row',
+    gap: 8,
+  },
+  interpretedTag: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 10,
+    paddingVertical: 6,
+    borderRadius: 12,
+    gap: 4,
+  },
+  interpretedTagText: {
+    fontSize: 11,
+    fontWeight: '600',
+  },
+  chevronContainer: {
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   quickRecordButton: {
+    borderRadius: 20,
+    marginBottom: 40,
+    overflow: 'hidden',
+  },
+  quickRecordGradient: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    paddingVertical: 16,
-    borderRadius: 12,
-    marginBottom: 30,
+    paddingVertical: 18,
+    paddingHorizontal: 24,
+    gap: 12,
   },
   quickRecordText: {
-    fontSize: 16,
+    fontSize: 17,
     fontWeight: '600',
-    marginLeft: 8,
   },
 });

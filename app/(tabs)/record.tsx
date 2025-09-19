@@ -7,7 +7,9 @@ import {
   ScrollView,
   KeyboardAvoidingView,
   Platform,
+  View,
 } from 'react-native';
+import { LinearGradient } from 'expo-linear-gradient';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { router } from 'expo-router';
 
@@ -29,7 +31,7 @@ export default function RecordScreen() {
   const [isSaving, setIsSaving] = useState(false);
 
   const contentInputRef = useRef<TextInput>(null);
-  const autoSaveTimeoutRef = useRef<NodeJS.Timeout>();
+  const autoSaveTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const emotions = [
     { key: 'positive', label: '긍정적', icon: '😊', color: colors.positive },
@@ -137,11 +139,17 @@ export default function RecordScreen() {
   };
 
   return (
-    <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
-      <KeyboardAvoidingView
-        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-        style={styles.keyboardAvoidingView}
+    <SafeAreaView style={styles.container}>
+      <LinearGradient
+        colors={colors.backgroundGradient}
+        style={styles.gradientBackground}
+        start={{ x: 0, y: 0 }}
+        end={{ x: 0, y: 1 }}
       >
+        <KeyboardAvoidingView
+          behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+          style={styles.keyboardAvoidingView}
+        >
         <ThemedView style={styles.header}>
           <ThemedView style={styles.headerLeft}>
             <TouchableOpacity onPress={() => router.back()}>
@@ -164,16 +172,27 @@ export default function RecordScreen() {
         </ThemedView>
 
         <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
-          <ThemedView style={[styles.inputContainer, { backgroundColor: colors.card }]}>
-            <ThemedText style={[styles.label, { color: colors.primary }]}>
-              제목 *
-            </ThemedText>
+          <ThemedView style={[styles.inputContainer, {
+            backgroundColor: colors.card,
+            shadowColor: colors.cardShadow,
+            shadowOffset: { width: 0, height: 2 },
+            shadowOpacity: 1,
+            shadowRadius: 8,
+            elevation: 4,
+          }]}>
+            <View style={styles.labelContainer}>
+              <IconSymbol name="textformat" size={16} color={colors.primary} />
+              <ThemedText style={[styles.label, { color: colors.primary }]}>
+                제목 *
+              </ThemedText>
+            </View>
             <TextInput
               style={[
                 styles.titleInput,
                 {
                   color: colors.text,
-                  borderColor: colors.border,
+                  backgroundColor: colors.background,
+                  borderColor: colors.borderLight,
                 }
               ]}
               value={title}
@@ -184,10 +203,20 @@ export default function RecordScreen() {
             />
           </ThemedView>
 
-          <ThemedView style={[styles.inputContainer, { backgroundColor: colors.card }]}>
-            <ThemedText style={[styles.label, { color: colors.primary }]}>
-              기분 *
-            </ThemedText>
+          <ThemedView style={[styles.inputContainer, {
+            backgroundColor: colors.card,
+            shadowColor: colors.cardShadow,
+            shadowOffset: { width: 0, height: 2 },
+            shadowOpacity: 1,
+            shadowRadius: 8,
+            elevation: 4,
+          }]}>
+            <View style={styles.labelContainer}>
+              <IconSymbol name="heart.fill" size={16} color={colors.primary} />
+              <ThemedText style={[styles.label, { color: colors.primary }]}>
+                기분 *
+              </ThemedText>
+            </View>
             <ThemedView style={styles.emotionContainer}>
               {emotions.map((emotion) => (
                 <TouchableOpacity
@@ -197,7 +226,12 @@ export default function RecordScreen() {
                     {
                       backgroundColor:
                         selectedEmotion === emotion.key ? emotion.color : colors.background,
-                      borderColor: emotion.color,
+                      borderColor: selectedEmotion === emotion.key ? emotion.color : colors.borderLight,
+                      shadowColor: selectedEmotion === emotion.key ? emotion.color : 'transparent',
+                      shadowOffset: { width: 0, height: 2 },
+                      shadowOpacity: selectedEmotion === emotion.key ? 0.3 : 0,
+                      shadowRadius: 4,
+                      elevation: selectedEmotion === emotion.key ? 4 : 0,
                     },
                   ]}
                   onPress={() => setSelectedEmotion(emotion.key)}
@@ -219,17 +253,28 @@ export default function RecordScreen() {
             </ThemedView>
           </ThemedView>
 
-          <ThemedView style={[styles.inputContainer, { backgroundColor: colors.card }]}>
-            <ThemedText style={[styles.label, { color: colors.primary }]}>
-              내용 *
-            </ThemedText>
+          <ThemedView style={[styles.inputContainer, {
+            backgroundColor: colors.card,
+            shadowColor: colors.cardShadow,
+            shadowOffset: { width: 0, height: 2 },
+            shadowOpacity: 1,
+            shadowRadius: 8,
+            elevation: 4,
+          }]}>
+            <View style={styles.labelContainer}>
+              <IconSymbol name="doc.text" size={16} color={colors.primary} />
+              <ThemedText style={[styles.label, { color: colors.primary }]}>
+                내용 *
+              </ThemedText>
+            </View>
             <TextInput
               ref={contentInputRef}
               style={[
                 styles.contentInput,
                 {
                   color: colors.text,
-                  borderColor: colors.border,
+                  backgroundColor: colors.background,
+                  borderColor: colors.borderLight,
                 }
               ]}
               value={content}
@@ -242,39 +287,54 @@ export default function RecordScreen() {
           </ThemedView>
         </ScrollView>
 
-        <ThemedView style={[styles.footer, { backgroundColor: colors.background }]}>
+        <ThemedView style={styles.footer}>
           <TouchableOpacity
             style={[
               styles.saveButton,
               {
-                backgroundColor: colors.primary,
                 opacity: isLoading ? 0.6 : 1,
+                shadowColor: colors.primary,
+                shadowOffset: { width: 0, height: 4 },
+                shadowOpacity: 0.3,
+                shadowRadius: 12,
+                elevation: 8,
               }
             ]}
             onPress={handleSave}
             disabled={isLoading}
           >
-            {isLoading ? (
-              <ThemedText style={[styles.saveButtonText, { color: 'white' }]}>
-                저장 중...
-              </ThemedText>
-            ) : (
-              <>
-                <IconSymbol name="checkmark" size={20} color="white" />
+            <LinearGradient
+              colors={[colors.primary, colors.primaryLight]}
+              style={styles.saveButtonGradient}
+              start={{ x: 0, y: 0 }}
+              end={{ x: 1, y: 0 }}
+            >
+              {isLoading ? (
                 <ThemedText style={[styles.saveButtonText, { color: 'white' }]}>
-                  저장하기
+                  저장 중...
                 </ThemedText>
-              </>
-            )}
+              ) : (
+                <>
+                  <IconSymbol name="checkmark.circle.fill" size={24} color="white" />
+                  <ThemedText style={[styles.saveButtonText, { color: 'white' }]}>
+                    저장하기
+                  </ThemedText>
+                </>
+              )}
+            </LinearGradient>
           </TouchableOpacity>
         </ThemedView>
-      </KeyboardAvoidingView>
+        </KeyboardAvoidingView>
+      </LinearGradient>
     </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
+    flex: 1,
+  },
+  gradientBackground: {
     flex: 1,
   },
   keyboardAvoidingView: {
@@ -285,7 +345,7 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     alignItems: 'center',
     paddingHorizontal: 20,
-    paddingVertical: 15,
+    paddingVertical: 20,
   },
   headerLeft: {
     flexDirection: 'row',
@@ -293,7 +353,7 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   headerTitle: {
-    fontSize: 20,
+    fontSize: 22,
     fontWeight: 'bold',
     marginLeft: 12,
   },
@@ -304,26 +364,33 @@ const styles = StyleSheet.create({
   },
   savingText: {
     fontSize: 12,
+    fontWeight: '500',
   },
   content: {
     flex: 1,
     paddingHorizontal: 20,
   },
   inputContainer: {
-    borderRadius: 16,
-    padding: 20,
-    marginBottom: 20,
+    borderRadius: 20,
+    padding: 24,
+    marginBottom: 24,
+  },
+  labelContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    marginBottom: 16,
   },
   label: {
     fontSize: 16,
     fontWeight: '600',
-    marginBottom: 12,
   },
   titleInput: {
     borderWidth: 1,
-    borderRadius: 12,
+    borderRadius: 16,
     padding: 16,
     fontSize: 16,
+    fontWeight: '500',
   },
   emotionContainer: {
     flexDirection: 'row',
@@ -332,12 +399,12 @@ const styles = StyleSheet.create({
   emotionButton: {
     flex: 1,
     borderWidth: 2,
-    borderRadius: 12,
+    borderRadius: 16,
     padding: 16,
     alignItems: 'center',
   },
   emotionIcon: {
-    fontSize: 24,
+    fontSize: 28,
     marginBottom: 8,
   },
   emotionLabel: {
@@ -346,24 +413,29 @@ const styles = StyleSheet.create({
   },
   contentInput: {
     borderWidth: 1,
-    borderRadius: 12,
-    padding: 16,
+    borderRadius: 16,
+    padding: 20,
     fontSize: 16,
     minHeight: 200,
+    lineHeight: 24,
   },
   footer: {
     padding: 20,
   },
   saveButton: {
+    borderRadius: 20,
+    overflow: 'hidden',
+  },
+  saveButtonGradient: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    paddingVertical: 16,
-    borderRadius: 12,
-    gap: 8,
+    paddingVertical: 18,
+    paddingHorizontal: 24,
+    gap: 12,
   },
   saveButtonText: {
-    fontSize: 16,
+    fontSize: 17,
     fontWeight: '600',
   },
 });

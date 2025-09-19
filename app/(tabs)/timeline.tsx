@@ -65,7 +65,7 @@ export default function TimelineScreen() {
   };
 
   const handleDreamPress = (dream: Dream) => {
-    router.push(`/dream/${dream.id}`);
+    router.push(`/dream/${dream.id}` as any);
   };
 
   const handleDeleteDream = (dreamId: string) => {
@@ -145,7 +145,7 @@ export default function TimelineScreen() {
         </ThemedText>
       </ThemedView>
 
-      <ThemedView style={[styles.filterContainer, { backgroundColor: colors.card }]}>
+      <ThemedView style={styles.filterContainer}>
         <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.filterScrollView}>
           {filters.map((filter) => (
             <TouchableOpacity
@@ -153,7 +153,7 @@ export default function TimelineScreen() {
               style={[
                 styles.filterButton,
                 {
-                  backgroundColor: selectedFilter === filter.key ? colors.primary : colors.background,
+                  backgroundColor: selectedFilter === filter.key ? colors.primary : 'transparent',
                   borderColor: colors.border,
                 }
               ]}
