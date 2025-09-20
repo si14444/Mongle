@@ -1,6 +1,6 @@
 import { LinearGradient } from 'expo-linear-gradient';
 import { router } from 'expo-router';
-import React, { useState } from 'react';
+import React from 'react';
 import { Image, ScrollView, StyleSheet, TouchableOpacity } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
@@ -14,7 +14,8 @@ import { ConfirmModal } from '@/components/ui/custom-modal';
 import { Colors } from '@/constants/theme';
 import { CommonStyles } from '@/constants/common-styles';
 import { useColorScheme } from '@/hooks/use-color-scheme';
-import { useDreams, useDreamStats, useDeleteDream } from '@/hooks/useDreams';
+import { useDreams, useDreamStats } from '@/hooks/useDreams';
+import { useDeleteModal } from '@/hooks/useDeleteModal';
 import { Dream } from '@/types/dream';
 
 export default function HomeScreen() {
@@ -23,31 +24,16 @@ export default function HomeScreen() {
 
   const { data: dreams = [] } = useDreams();
   const { data: stats } = useDreamStats();
-  const deleteDreamMutation = useDeleteDream();
+  const { showDeleteModal, openDeleteModal, closeDeleteModal, confirmDelete } = useDeleteModal();
 
   const recentDreams = dreams.slice(0, 3);
-  const [showDeleteModal, setShowDeleteModal] = useState(false);
-  const [dreamToDelete, setDreamToDelete] = useState<string | null>(null);
 
   const handleDreamPress = (dream: Dream) => {
     router.push(`/dream/${dream.id}` as any);
   };
 
   const handleDeleteDream = (dreamId: string) => {
-    setDreamToDelete(dreamId);
-    setShowDeleteModal(true);
-  };
-
-  const handleDeleteConfirm = () => {
-    if (dreamToDelete) {
-      deleteDreamMutation.mutate(dreamToDelete, {
-        onError: (error) => {
-          console.error('Failed to delete dream:', error);
-        },
-      });
-    }
-    setDreamToDelete(null);
-    setShowDeleteModal(false);
+    openDeleteModal(dreamId);
   };
 
   return (
@@ -214,8 +200,8 @@ export default function HomeScreen() {
       {/* Delete Confirmation Modal */}
       <ConfirmModal
         visible={showDeleteModal}
-        onClose={() => setShowDeleteModal(false)}
-        onConfirm={handleDeleteConfirm}
+        onClose={closeDeleteModal}
+        onConfirm={confirmDelete}
         title="꿈 삭제"
         message="이 꿈을 삭제하시겠습니까?"
         confirmText="삭제"

@@ -117,4 +117,44 @@ export const CommonStyles = StyleSheet.create({
   paddingVertical16: {
     paddingVertical: 16,
   },
+  headerContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingHorizontal: 20,
+    paddingVertical: 20,
+  },
+  headerLeft: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    flex: 1,
+  },
+  headerRight: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 15,
+  },
+  headerTitle: {
+    fontSize: 22,
+    fontWeight: 'bold',
+  },
+  section: {
+    borderRadius: 20,
+    padding: 24,
+    marginBottom: 24,
+  },
+  sectionShadow: {
+    borderWidth: 1,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 1,
+    shadowRadius: 12,
+    elevation: 8,
+  },
+  gradientBackground: {
+    flex: 1,
+  },
+  contentScrollView: {
+    flex: 1,
+    paddingHorizontal: 20,
+  },
 });

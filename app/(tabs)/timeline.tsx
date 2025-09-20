@@ -6,9 +6,7 @@ import {
   RefreshControl,
   ScrollView,
   StyleSheet,
-  TextInput,
   TouchableOpacity,
-  View,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
@@ -22,7 +20,8 @@ import { DreamCard } from "@/components/ui/dream-card";
 import { Colors } from "@/constants/theme";
 import { CommonStyles } from "@/constants/common-styles";
 import { useColorScheme } from "@/hooks/use-color-scheme";
-import { useDeleteDream, useDreams } from "@/hooks/useDreams";
+import { useDreams } from "@/hooks/useDreams";
+import { useDeleteModal } from "@/hooks/useDeleteModal";
 import { Dream } from "@/types/dream";
 
 export default function TimelineScreen() {
@@ -30,13 +29,11 @@ export default function TimelineScreen() {
   const colors = Colors[colorScheme ?? "light"];
 
   const { data: dreams = [], refetch, isRefetching } = useDreams();
-  const deleteDreamMutation = useDeleteDream();
+  const { showDeleteModal, openDeleteModal, closeDeleteModal, confirmDelete } = useDeleteModal();
   const [selectedFilter, setSelectedFilter] = useState<
     "all" | "positive" | "negative" | "neutral"
   >("all");
   const [searchQuery, setSearchQuery] = useState("");
-  const [showDeleteModal, setShowDeleteModal] = useState(false);
-  const [dreamToDelete, setDreamToDelete] = useState<string | null>(null);
 
   const filters = [
     { key: "all", label: "전체", icon: "calendar" },
@@ -82,19 +79,7 @@ export default function TimelineScreen() {
   };
 
   const handleDeleteDream = (dreamId: string) => {
-    setDreamToDelete(dreamId);
-    setShowDeleteModal(true);
-  };
-
-  const handleDeleteConfirm = () => {
-    if (dreamToDelete) {
-      deleteDreamMutation.mutate(dreamToDelete, {
-        onError: (error) => {
-          console.error("Failed to delete dream:", error);
-        },
-      });
-    }
-    setDreamToDelete(null);
+    openDeleteModal(dreamId);
   };
 
 
@@ -258,8 +243,8 @@ export default function TimelineScreen() {
       {/* Delete Confirmation Modal */}
       <ConfirmModal
         visible={showDeleteModal}
-        onClose={() => setShowDeleteModal(false)}
-        onConfirm={handleDeleteConfirm}
+        onClose={closeDeleteModal}
+        onConfirm={confirmDelete}
         title="꿈 삭제"
         message="이 꿈을 삭제하시겠습니까?"
         confirmText="삭제"

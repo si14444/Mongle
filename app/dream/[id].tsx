@@ -8,7 +8,8 @@ import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { Colors } from '@/constants/theme';
 import { useColorScheme } from '@/hooks/use-color-scheme';
-import { useDream, useDeleteDream } from '@/hooks/useDreams';
+import { useDream } from '@/hooks/useDreams';
+import { useDeleteModal } from '@/hooks/useDeleteModal';
 import { IconSymbol } from '@/components/ui/icon-symbol';
 import { ConfirmModal } from '@/components/ui/custom-modal';
 
@@ -18,9 +19,8 @@ export default function DreamDetailScreen() {
   const { id, interpretationId } = useLocalSearchParams<{ id: string; interpretationId?: string }>();
 
   const { data: dream, isLoading, error, refetch } = useDream(id!);
-  const deleteDreamMutation = useDeleteDream();
+  const { showDeleteModal, openDeleteModal, closeDeleteModal, confirmDelete } = useDeleteModal();
   const [selectedInterpretationId, setSelectedInterpretationId] = useState<string | null>(null);
-  const [showDeleteModal, setShowDeleteModal] = useState(false);
 
   // Refetch when page is focused
   useFocusEffect(
@@ -65,17 +65,7 @@ export default function DreamDetailScreen() {
   const handleDeleteDream = () => {
     if (!dream) return;
 
-    deleteDreamMutation.mutate(dream.id, {
-      onSuccess: () => {
-        setShowDeleteModal(false);
-        router.replace('/(tabs)/timeline');
-      },
-      onError: (error) => {
-        console.error('Failed to delete dream:', error);
-        setShowDeleteModal(false);
-        // 오류 처리 (추후 토스트나 알림 추가 가능)
-      },
-    });
+    openDeleteModal(dream.id);
   };
 
   const getCurrentInterpretation = () => {
@@ -147,7 +137,7 @@ export default function DreamDetailScreen() {
           </TouchableOpacity>
           <TouchableOpacity
             style={[styles.deleteButton, { backgroundColor: colors.card }]}
-            onPress={() => setShowDeleteModal(true)}
+            onPress={handleDeleteDream}
           >
             <IconSymbol name="trash" size={20} color={colors.negative} />
           </TouchableOpacity>
@@ -260,8 +250,8 @@ export default function DreamDetailScreen() {
         {/* Delete Confirmation Modal */}
         <ConfirmModal
           visible={showDeleteModal}
-          onClose={() => setShowDeleteModal(false)}
-          onConfirm={handleDeleteDream}
+          onClose={closeDeleteModal}
+          onConfirm={() => confirmDelete(() => router.replace('/(tabs)/timeline'))}
           title="꿈 삭제"
           message="이 꿈을 삭제하시겠습니까? 삭제된 꿈과 해석은 복구할 수 없습니다."
           confirmText="삭제"
