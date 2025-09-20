@@ -206,56 +206,6 @@ export default function DreamDetailScreen() {
                   </ThemedText>
                 </ThemedView>
 
-                {/* Interpretation history selector */}
-                {dream?.interpretationHistory && dream.interpretationHistory.length > 0 && (
-                  <ThemedView style={styles.interpretationHistorySelector}>
-                    <ThemedText style={[styles.historySelectorTitle, { color: colors.text }]}>
-                      해석 기록 ({dream?.interpretationHistory?.length || 0}개)
-                    </ThemedText>
-                    <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.historyScroll}>
-                      {dream?.interpretationHistory?.map((interpretation, index) => (
-                        <TouchableOpacity
-                          key={interpretation.id}
-                          style={[
-                            styles.historyItem,
-                            {
-                              backgroundColor: selectedInterpretationId === interpretation.id
-                                ? colors.accent
-                                : colors.secondary,
-                              borderColor: colors.border,
-                            }
-                          ]}
-                          onPress={() => setSelectedInterpretationId(interpretation.id)}
-                        >
-                          <ThemedText
-                            style={[
-                              styles.historyItemText,
-                              {
-                                color: selectedInterpretationId === interpretation.id
-                                  ? 'white'
-                                  : colors.text
-                              }
-                            ]}
-                          >
-                            #{index + 1}
-                          </ThemedText>
-                          <ThemedText
-                            style={[
-                              styles.historyItemDate,
-                              {
-                                color: selectedInterpretationId === interpretation.id
-                                  ? 'white'
-                                  : colors.icon
-                              }
-                            ]}
-                          >
-                            {formatDateTime(interpretation.createdAt)}
-                          </ThemedText>
-                        </TouchableOpacity>
-                      ))}
-                    </ScrollView>
-                  </ThemedView>
-                )}
 
                 {currentInterpretation && (
                   <ThemedView style={[styles.interpretationContent, { backgroundColor: colors.secondary + '20' }]}>
@@ -450,38 +400,6 @@ const styles = StyleSheet.create({
     lineHeight: 26,
     letterSpacing: 0.2,
     marginBottom: 20,
-  },
-  interpretationHistorySelector: {
-    paddingHorizontal: 20,
-    paddingVertical: 16,
-    borderBottomWidth: 1,
-    borderBottomColor: '#f0f0f0',
-  },
-  historySelectorTitle: {
-    fontSize: 14,
-    fontWeight: '600',
-    marginBottom: 12,
-  },
-  historyScroll: {
-    flexDirection: 'row',
-  },
-  historyItem: {
-    paddingHorizontal: 16,
-    paddingVertical: 12,
-    borderRadius: 12,
-    marginRight: 12,
-    borderWidth: 1,
-    minWidth: 80,
-    alignItems: 'center',
-  },
-  historyItemText: {
-    fontSize: 14,
-    fontWeight: '600',
-    marginBottom: 4,
-  },
-  historyItemDate: {
-    fontSize: 10,
-    fontWeight: '500',
   },
   symbolsSection: {
     marginBottom: 16,
