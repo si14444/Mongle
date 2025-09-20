@@ -41,6 +41,7 @@ export default function InterpretScreen() {
   const [showInterpretationModal, setShowInterpretationModal] = useState(false);
   const [showDreamDetailModal, setShowDreamDetailModal] = useState(false);
   const [showErrorModal, setShowErrorModal] = useState(false);
+  const [showAlreadyInterpretedModal, setShowAlreadyInterpretedModal] = useState(false);
 
   const filterDreams = useCallback(() => {
     if (!searchQuery.trim()) {
@@ -73,6 +74,12 @@ export default function InterpretScreen() {
   const handleInterpret = async () => {
     if (!selectedDream) {
       console.log("No selected dream");
+      return;
+    }
+
+    // 이미 해석된 꿈인지 체크
+    if (selectedDream.interpretation) {
+      setShowAlreadyInterpretedModal(true);
       return;
     }
 
@@ -202,7 +209,7 @@ export default function InterpretScreen() {
               style={[
                 styles.selectedDreamSection,
                 {
-                  backgroundColor: colors.card,
+                  backgroundColor: colors.primary + '10',
                   shadowColor: colors.cardShadow,
                   shadowOffset: { width: 0, height: 4 },
                   shadowOpacity: 1,
@@ -238,9 +245,9 @@ export default function InterpretScreen() {
                   style={[
                     styles.interpretButton,
                     {
-                      backgroundColor: colors.accent,
+                      backgroundColor: selectedDream?.interpretation ? colors.neutral : colors.primary,
                       opacity: isLoading ? 0.6 : 1,
-                      shadowColor: colors.accent,
+                      shadowColor: selectedDream?.interpretation ? colors.neutral : colors.primary,
                       shadowOffset: { width: 0, height: 2 },
                       shadowOpacity: 0.3,
                       shadowRadius: 4,
@@ -254,11 +261,15 @@ export default function InterpretScreen() {
                     <ActivityIndicator size="small" color="white" />
                   ) : (
                     <>
-                      <IconSymbol name="brain" size={16} color="white" />
+                      <IconSymbol
+                        name={selectedDream?.interpretation ? "checkmark.circle" : "brain"}
+                        size={16}
+                        color="white"
+                      />
                       <ThemedText
                         style={[styles.interpretButtonText, { color: "white" }]}
                       >
-                        해석하기
+                        {selectedDream?.interpretation ? "이미 해석됨" : "해석하기"}
                       </ThemedText>
                     </>
                   )}
@@ -301,7 +312,7 @@ export default function InterpretScreen() {
                           {
                             backgroundColor:
                               selectedDream?.id === dream.id
-                                ? colors.secondary
+                                ? colors.primary + '20'
                                 : "transparent",
                             borderColor:
                               selectedDream?.id === dream.id
@@ -593,6 +604,15 @@ export default function InterpretScreen() {
           title="오류"
           message="꿈 해석 중 오류가 발생했습니다."
           type="error"
+        />
+
+        {/* Already Interpreted Modal */}
+        <CustomModal
+          visible={showAlreadyInterpretedModal}
+          onClose={() => setShowAlreadyInterpretedModal(false)}
+          title="이미 해석된 꿈"
+          message="이 꿈은 이미 해석되었습니다. 타임라인에서 해석 결과를 확인하세요."
+          type="warning"
         />
       </LinearGradient>
     </SafeAreaView>
