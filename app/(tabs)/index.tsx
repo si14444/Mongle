@@ -7,8 +7,11 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { IconSymbol } from '@/components/ui/icon-symbol';
+import { SectionHeader } from '@/components/ui/section-header';
+import { EmptyState } from '@/components/ui/empty-state';
 import { DreamCard } from '@/components/ui/dream-card';
 import { Colors } from '@/constants/theme';
+import { CommonStyles } from '@/constants/common-styles';
 import { useColorScheme } from '@/hooks/use-color-scheme';
 import { useDreams, useDreamStats } from '@/hooks/useDreams';
 import { Dream } from '@/types/dream';
@@ -133,67 +136,22 @@ export default function HomeScreen() {
           shadowRadius: 12,
           elevation: 8,
         }]}>
-          <ThemedView style={styles.sectionHeader}>
-            <ThemedView style={styles.sectionHeaderWithIcon}>
-              <ThemedView style={[styles.iconContainer, { backgroundColor: colors.primary + '15' }]}>
-                <IconSymbol name="moon.stars.fill" size={18} color={colors.primary} />
-              </ThemedView>
-              <ThemedText type="subtitle" style={[styles.sectionTitle, { color: colors.primary }]}>
-                최근 꿈
-              </ThemedText>
-            </ThemedView>
-            <TouchableOpacity
-              style={styles.seeAllButton}
-              onPress={() => router.push('/(tabs)/timeline')}
-            >
-              <LinearGradient
-                colors={[colors.primary, colors.primaryLight]}
-                style={styles.seeAllGradient}
-                start={{ x: 0, y: 0 }}
-                end={{ x: 1, y: 0 }}
-              >
-                <ThemedText style={[styles.seeAllText, { color: 'white' }]}>
-                  전체보기
-                </ThemedText>
-                <IconSymbol name="chevron.right" size={16} color="white" />
-              </LinearGradient>
-            </TouchableOpacity>
-          </ThemedView>
+          <SectionHeader
+            title="최근 꿈"
+            icon="moon.stars.fill"
+            actionText="전체보기"
+            onActionPress={() => router.push('/(tabs)/timeline')}
+          />
 
           {recentDreams.length === 0 ? (
-            <ThemedView style={styles.emptyState}>
-              <ThemedView style={[styles.emptyIconContainer, { backgroundColor: colors.secondary + '30' }]}>
-                <IconSymbol name="moon.stars" size={48} color={colors.primary} />
-              </ThemedView>
-              <ThemedText style={[styles.emptyText, { color: colors.text }]}>
-                아직 기록된 꿈이 없습니다
-              </ThemedText>
-              <ThemedText style={[styles.emptySubtext, { color: colors.icon }]}>
-                첫 번째 꿈을 기록해보세요
-              </ThemedText>
-              <TouchableOpacity
-                style={[styles.recordButton, {
-                  shadowColor: colors.primary,
-                  shadowOffset: { width: 0, height: 4 },
-                  shadowOpacity: 0.3,
-                  shadowRadius: 8,
-                  elevation: 6,
-                }]}
-                onPress={() => router.push('/(tabs)/record')}
-              >
-                <LinearGradient
-                  colors={[colors.primary, colors.primaryLight]}
-                  style={styles.recordButtonGradient}
-                  start={{ x: 0, y: 0 }}
-                  end={{ x: 1, y: 0 }}
-                >
-                  <IconSymbol name="plus" size={20} color="white" />
-                  <ThemedText style={[styles.recordButtonText, { color: 'white' }]}>
-                    첫 꿈 기록하기
-                  </ThemedText>
-                </LinearGradient>
-              </TouchableOpacity>
-            </ThemedView>
+            <EmptyState
+              icon="moon.stars"
+              title="아직 기록된 꿈이 없습니다"
+              subtitle="첫 번째 꿈을 기록해보세요"
+              actionText="첫 꿈 기록하기"
+              onActionPress={() => router.push('/(tabs)/record')}
+              actionIcon="plus"
+            />
           ) : (
             recentDreams.map((dream, index) => (
               <DreamCard
@@ -332,17 +290,12 @@ const styles = StyleSheet.create({
     padding: 28,
   },
   sectionHeaderWithIcon: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 12,
-    marginBottom: 20,
+    ...CommonStyles.flexRow,
+    ...CommonStyles.gap12,
+    ...CommonStyles.marginBottom20,
   },
   iconContainer: {
-    width: 32,
-    height: 32,
-    borderRadius: 16,
-    alignItems: 'center',
-    justifyContent: 'center',
+    ...CommonStyles.iconContainer,
   },
   statsGrid: {
     flexDirection: 'row',
@@ -383,77 +336,6 @@ const styles = StyleSheet.create({
     borderRadius: 20,
     padding: 24,
     marginBottom: 24,
-  },
-  sectionHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: 20,
-  },
-  sectionTitle: {
-    fontSize: 18,
-    fontWeight: 'bold',
-  },
-  seeAllButton: {
-    borderRadius: 20,
-    overflow: 'hidden',
-    shadowColor: '#1E3A8A',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.25,
-    shadowRadius: 6,
-    elevation: 4,
-  },
-  seeAllGradient: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingHorizontal: 16,
-    paddingVertical: 8,
-    gap: 6,
-  },
-  seeAllText: {
-    fontSize: 14,
-    fontWeight: '700',
-    letterSpacing: 0.5,
-  },
-  emptyState: {
-    alignItems: 'center',
-    paddingVertical: 50,
-    paddingHorizontal: 20,
-  },
-  emptyIconContainer: {
-    width: 100,
-    height: 100,
-    borderRadius: 50,
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginBottom: 24,
-  },
-  emptyText: {
-    fontSize: 18,
-    fontWeight: '600',
-    marginBottom: 8,
-    textAlign: 'center',
-  },
-  emptySubtext: {
-    fontSize: 14,
-    marginBottom: 32,
-    textAlign: 'center',
-  },
-  recordButton: {
-    borderRadius: 24,
-    overflow: 'hidden',
-  },
-  recordButtonGradient: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    paddingHorizontal: 32,
-    paddingVertical: 16,
-    gap: 8,
-  },
-  recordButtonText: {
-    fontSize: 16,
-    fontWeight: '600',
   },
   quickRecordButton: {
     borderRadius: 20,

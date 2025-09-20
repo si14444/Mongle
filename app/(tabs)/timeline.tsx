@@ -15,9 +15,12 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { ThemedText } from "@/components/themed-text";
 import { ThemedView } from "@/components/themed-view";
 import { IconSymbol } from "@/components/ui/icon-symbol";
+import { SearchBar } from "@/components/ui/search-bar";
+import { SectionHeader } from "@/components/ui/section-header";
 import { ConfirmModal } from "@/components/ui/custom-modal";
 import { DreamCard } from "@/components/ui/dream-card";
 import { Colors } from "@/constants/theme";
+import { CommonStyles } from "@/constants/common-styles";
 import { useColorScheme } from "@/hooks/use-color-scheme";
 import { useDeleteDream, useDreams } from "@/hooks/useDreams";
 import { Dream } from "@/types/dream";
@@ -136,40 +139,11 @@ export default function TimelineScreen() {
           </ThemedView>
         </ThemedView>
 
-        {/* Search Bar */}
-        <ThemedView
-          style={[
-            styles.searchContainer,
-            {
-              backgroundColor: colors.card,
-              shadowColor: colors.cardShadow,
-              shadowOffset: { width: 0, height: 2 },
-              shadowOpacity: 1,
-              shadowRadius: 8,
-              elevation: 4,
-            },
-          ]}
-        >
-          <View style={styles.searchInputContainer}>
-            <IconSymbol name="magnifyingglass" size={16} color={colors.icon} />
-            <TextInput
-              style={[styles.searchInput, { color: colors.text }]}
-              value={searchQuery}
-              onChangeText={setSearchQuery}
-              placeholder="꿈 제목이나 내용으로 검색하세요"
-              placeholderTextColor={colors.icon}
-            />
-            {searchQuery.length > 0 && (
-              <TouchableOpacity onPress={() => setSearchQuery("")}>
-                <IconSymbol
-                  name="xmark.circle.fill"
-                  size={16}
-                  color={colors.icon}
-                />
-              </TouchableOpacity>
-            )}
-          </View>
-        </ThemedView>
+        <SearchBar
+          value={searchQuery}
+          onChangeText={setSearchQuery}
+          placeholder="꿈 제목이나 내용으로 검색하세요"
+        />
 
 
         <ThemedView style={styles.filterContainer}>
@@ -257,17 +231,11 @@ export default function TimelineScreen() {
                 shadowRadius: 12,
                 elevation: 8,
               }]}>
-                <ThemedView style={styles.monthHeader}>
-                  <ThemedView style={[styles.iconContainer, { backgroundColor: colors.primary + '15' }]}>
-                    <IconSymbol name="calendar" size={18} color={colors.primary} />
-                  </ThemedView>
-                  <ThemedText
-                    type="subtitle"
-                    style={[styles.monthTitle, { color: colors.primary }]}
-                  >
-                    {monthKey}
-                  </ThemedText>
-                </ThemedView>
+                <SectionHeader
+                  title={monthKey}
+                  icon="calendar"
+                  showIconContainer={true}
+                />
 
                 <ThemedView style={styles.dreamsList}>
                   {monthDreams.map((dream, index) => (
@@ -330,22 +298,6 @@ const styles = StyleSheet.create({
     alignItems: "center",
     gap: 15,
   },
-  searchContainer: {
-    marginHorizontal: 20,
-    marginBottom: 20,
-    borderRadius: 16,
-    padding: 16,
-  },
-  searchInputContainer: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 12,
-  },
-  searchInput: {
-    flex: 1,
-    fontSize: 16,
-    paddingVertical: 4,
-  },
   filterContainer: {
     paddingVertical: 15,
     marginHorizontal: 20,
@@ -371,10 +323,10 @@ const styles = StyleSheet.create({
   },
   content: {
     flex: 1,
-    paddingHorizontal: 20,
+    ...CommonStyles.paddingHorizontal20,
   },
   emptyState: {
-    alignItems: "center",
+    ...CommonStyles.centerAlign,
     paddingVertical: 60,
   },
   emptyText: {
@@ -395,23 +347,6 @@ const styles = StyleSheet.create({
     borderRadius: 20,
     padding: 24,
     marginBottom: 24,
-  },
-  monthHeader: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 12,
-    marginBottom: 20,
-  },
-  iconContainer: {
-    width: 32,
-    height: 32,
-    borderRadius: 16,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  monthTitle: {
-    fontSize: 18,
-    fontWeight: "bold",
   },
   dreamsList: {
     gap: 0,
