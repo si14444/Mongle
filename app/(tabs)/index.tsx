@@ -7,6 +7,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { IconSymbol } from '@/components/ui/icon-symbol';
+import { DreamCard } from '@/components/ui/dream-card';
 import { Colors } from '@/constants/theme';
 import { useColorScheme } from '@/hooks/use-color-scheme';
 import { useDreams, useDreamStats } from '@/hooks/useDreams';
@@ -23,19 +24,6 @@ export default function HomeScreen() {
 
   const handleDreamPress = (dream: Dream) => {
     router.push(`/dream/${dream.id}` as any);
-  };
-
-  const formatDate = (dateString: string) => {
-    const date = new Date(dateString);
-    return `${date.getMonth() + 1}월 ${date.getDate()}일`;
-  };
-
-  const getEmotionColor = (emotion?: string) => {
-    switch (emotion) {
-      case 'positive': return colors.positive;
-      case 'negative': return colors.negative;
-      default: return colors.neutral;
-    }
   };
 
   return (
@@ -208,81 +196,12 @@ export default function HomeScreen() {
             </ThemedView>
           ) : (
             recentDreams.map((dream, index) => (
-              <TouchableOpacity
+              <DreamCard
                 key={dream.id}
-                style={[styles.dreamCard, {
-                  borderWidth: 1,
-                  borderColor: colors.border,
-                  shadowColor: colors.cardShadow,
-                  shadowOffset: { width: 0, height: 4 + index * 2 },
-                  shadowOpacity: 1,
-                  shadowRadius: 12 + index * 2,
-                  elevation: 6 + index,
-                  marginBottom: 20,
-                  transform: [{ scale: 1 }]
-                }]}
-                onPress={() => handleDreamPress(dream)}
-              >
-                <LinearGradient
-                  colors={[
-                    colors.card,
-                    getEmotionColor(dream.emotion) + '08',
-                    'transparent'
-                  ]}
-                  style={styles.dreamCardGradient}
-                  start={{ x: 0, y: 0 }}
-                  end={{ x: 1, y: 1 }}
-                >
-                  <ThemedView style={styles.dreamCardContent}>
-                    <ThemedView style={styles.dreamHeader}>
-                      <ThemedView style={styles.dreamTitleSection}>
-                        <ThemedText type="defaultSemiBold" style={[styles.dreamTitle, { color: colors.text }]}>
-                          {dream.title}
-                        </ThemedText>
-                        <ThemedView style={styles.dreamMeta}>
-                          <ThemedText style={[styles.dreamDate, { color: colors.icon }]}>
-                            {formatDate(dream.date)}
-                          </ThemedText>
-                          <ThemedView
-                            style={[
-                              styles.emotionIndicator,
-                              {
-                                backgroundColor: getEmotionColor(dream.emotion),
-                                shadowColor: getEmotionColor(dream.emotion),
-                                shadowOffset: { width: 0, height: 2 },
-                                shadowOpacity: 0.3,
-                                shadowRadius: 4,
-                                elevation: 2,
-                              }
-                            ]}
-                          />
-                        </ThemedView>
-                      </ThemedView>
-                    </ThemedView>
-                    <ThemedText
-                      style={[styles.dreamContent, { color: colors.text }]}
-                      numberOfLines={3}
-                    >
-                      {dream.content}
-                    </ThemedText>
-                    <ThemedView style={styles.dreamFooter}>
-                      <ThemedView style={styles.dreamTags}>
-                        {dream.interpretation && (
-                          <ThemedView style={[styles.interpretedTag, { borderWidth: 1, borderColor: colors.positive }]}>
-                            <IconSymbol name="sparkles" size={12} color={colors.positive} />
-                            <ThemedText style={[styles.interpretedTagText, { color: colors.positive }]}>
-                              해석됨
-                            </ThemedText>
-                          </ThemedView>
-                        )}
-                      </ThemedView>
-                      <ThemedView style={[styles.chevronContainer, { borderWidth: 1, borderColor: colors.border }]}>
-                        <IconSymbol name="chevron.right" size={16} color={colors.primary} />
-                      </ThemedView>
-                    </ThemedView>
-                  </ThemedView>
-                </LinearGradient>
-              </TouchableOpacity>
+                dream={dream}
+                onPress={handleDreamPress}
+                index={index}
+              />
             ))
           )}
         </ThemedView>
@@ -535,77 +454,6 @@ const styles = StyleSheet.create({
   recordButtonText: {
     fontSize: 16,
     fontWeight: '600',
-  },
-  dreamCard: {
-    borderRadius: 20,
-    overflow: 'hidden',
-  },
-  dreamCardGradient: {
-    borderRadius: 20,
-  },
-  dreamCardContent: {
-    padding: 24,
-  },
-  dreamHeader: {
-    marginBottom: 16,
-  },
-  dreamTitleSection: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'flex-start',
-  },
-  dreamTitle: {
-    fontSize: 18,
-    fontWeight: '700',
-    flex: 1,
-    marginRight: 12,
-  },
-  dreamMeta: {
-    alignItems: 'flex-end',
-    gap: 8,
-  },
-  dreamDate: {
-    fontSize: 12,
-    fontWeight: '500',
-  },
-  emotionIndicator: {
-    width: 16,
-    height: 16,
-    borderRadius: 8,
-  },
-  dreamContent: {
-    fontSize: 15,
-    lineHeight: 24,
-    marginBottom: 20,
-    opacity: 0.9,
-  },
-  dreamFooter: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-  },
-  dreamTags: {
-    flexDirection: 'row',
-    gap: 8,
-  },
-  interpretedTag: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingHorizontal: 10,
-    paddingVertical: 6,
-    borderRadius: 12,
-    gap: 4,
-  },
-  interpretedTagText: {
-    fontSize: 11,
-    fontWeight: '600',
-  },
-  chevronContainer: {
-    width: 32,
-    height: 32,
-    borderRadius: 16,
-    alignItems: 'center',
-    justifyContent: 'center',
   },
   quickRecordButton: {
     borderRadius: 20,
