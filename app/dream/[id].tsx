@@ -1,5 +1,5 @@
-import React from 'react';
-import { StyleSheet, ScrollView, TouchableOpacity } from 'react-native';
+import React, { useState, useEffect } from 'react';
+import { StyleSheet, ScrollView, TouchableOpacity, View } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useLocalSearchParams, router } from 'expo-router';
@@ -14,13 +14,28 @@ import { IconSymbol } from '@/components/ui/icon-symbol';
 export default function DreamDetailScreen() {
   const colorScheme = useColorScheme();
   const colors = Colors[colorScheme ?? 'light'];
-  const { id } = useLocalSearchParams<{ id: string }>();
+  const { id, interpretationId } = useLocalSearchParams<{ id: string; interpretationId?: string }>();
 
   const { data: dream, isLoading, error } = useDream(id!);
+  const [selectedInterpretationId, setSelectedInterpretationId] = useState<string | null>(null);
+
+  // Set selected interpretation from URL parameter
+  useEffect(() => {
+    if (interpretationId) {
+      setSelectedInterpretationId(interpretationId);
+    } else if (dream?.interpretation) {
+      setSelectedInterpretationId(dream.interpretation.id);
+    }
+  }, [interpretationId, dream?.interpretation]);
 
   const formatDate = (dateString: string) => {
     const date = new Date(dateString);
     return `${date.getFullYear()}년 ${date.getMonth() + 1}월 ${date.getDate()}일`;
+  };
+
+  const formatDateTime = (dateString: string) => {
+    const date = new Date(dateString);
+    return `${date.getMonth() + 1}월 ${date.getDate()}일 ${date.getHours()}:${date.getMinutes().toString().padStart(2, '0')}`;
   };
 
   const getEmotionColor = (emotion?: string) => {
@@ -30,6 +45,28 @@ export default function DreamDetailScreen() {
       default: return colors.neutral;
     }
   };
+
+  // Get the currently selected interpretation
+  const getCurrentInterpretation = () => {
+    if (!dream || !selectedInterpretationId) return null;
+
+    // Check interpretation history first
+    if (dream.interpretationHistory) {
+      const foundInterpretation = dream.interpretationHistory.find(
+        (interp) => interp.id === selectedInterpretationId
+      );
+      if (foundInterpretation) return foundInterpretation;
+    }
+
+    // Fallback to current interpretation
+    if (dream.interpretation && dream.interpretation.id === selectedInterpretationId) {
+      return dream.interpretation;
+    }
+
+    return null;
+  };
+
+  const currentInterpretation = getCurrentInterpretation();
 
   if (isLoading) {
     return (
@@ -121,7 +158,7 @@ export default function DreamDetailScreen() {
             </ThemedView>
 
             {/* Interpretation section */}
-            {dream.interpretation && (
+            {(dream.interpretation || dream.interpretationHistory) && (
               <ThemedView style={[styles.interpretationSection, { borderTopColor: colors.border }]}>
                 <ThemedView style={styles.interpretationHeader}>
                   <ThemedView style={[styles.iconContainer, { backgroundColor: colors.primary + '15' }]}>
@@ -131,11 +168,103 @@ export default function DreamDetailScreen() {
                     AI 해석
                   </ThemedText>
                 </ThemedView>
-                <ThemedView style={[styles.interpretationContent, { backgroundColor: colors.secondary + '20' }]}>
-                  <ThemedText style={[styles.interpretation, { color: colors.text }]}>
-                    {dream.interpretation.analysis}
-                  </ThemedText>
-                </ThemedView>
+
+                {/* Interpretation history selector */}
+                {dream.interpretationHistory && dream.interpretationHistory.length > 1 && (
+                  <ThemedView style={styles.interpretationHistorySelector}>
+                    <ThemedText style={[styles.historySelectorTitle, { color: colors.text }]}>
+                      해석 기록 ({dream.interpretationHistory.length}개)
+                    </ThemedText>
+                    <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.historyScroll}>
+                      {dream.interpretationHistory.map((interpretation, index) => (
+                        <TouchableOpacity
+                          key={interpretation.id}
+                          style={[
+                            styles.historyItem,
+                            {
+                              backgroundColor: selectedInterpretationId === interpretation.id
+                                ? colors.accent
+                                : colors.secondary,
+                              borderColor: colors.border,
+                            }
+                          ]}
+                          onPress={() => setSelectedInterpretationId(interpretation.id)}
+                        >
+                          <ThemedText
+                            style={[
+                              styles.historyItemText,
+                              {
+                                color: selectedInterpretationId === interpretation.id
+                                  ? 'white'
+                                  : colors.text
+                              }
+                            ]}
+                          >
+                            #{index + 1}
+                          </ThemedText>
+                          <ThemedText
+                            style={[
+                              styles.historyItemDate,
+                              {
+                                color: selectedInterpretationId === interpretation.id
+                                  ? 'white'
+                                  : colors.icon
+                              }
+                            ]}
+                          >
+                            {formatDateTime(interpretation.createdAt)}
+                          </ThemedText>
+                        </TouchableOpacity>
+                      ))}
+                    </ScrollView>
+                  </ThemedView>
+                )}
+
+                {currentInterpretation && (
+                  <ThemedView style={[styles.interpretationContent, { backgroundColor: colors.secondary + '20' }]}>
+                    <ThemedText style={[styles.interpretation, { color: colors.text }]}>
+                      {currentInterpretation.analysis}
+                    </ThemedText>
+
+                    {currentInterpretation.symbols && currentInterpretation.symbols.length > 0 && (
+                      <ThemedView style={styles.symbolsSection}>
+                        <ThemedText style={[styles.symbolsTitle, { color: colors.primary }]}>
+                          주요 상징
+                        </ThemedText>
+                        {currentInterpretation.symbols.map((symbol, index) => (
+                          <ThemedView
+                            key={index}
+                            style={[styles.symbolItem, { backgroundColor: colors.background, borderColor: colors.border }]}
+                          >
+                            <ThemedText style={[styles.symbolName, { color: colors.accent }]}>
+                              {symbol.symbol}
+                            </ThemedText>
+                            <ThemedText style={[styles.symbolMeaning, { color: colors.text }]}>
+                              {symbol.meaning}
+                            </ThemedText>
+                          </ThemedView>
+                        ))}
+                      </ThemedView>
+                    )}
+
+                    {currentInterpretation.themes && currentInterpretation.themes.length > 0 && (
+                      <ThemedView style={styles.themesSection}>
+                        <ThemedText style={[styles.themesTitle, { color: colors.primary }]}>
+                          주요 테마
+                        </ThemedText>
+                        <View style={styles.themesContainer}>
+                          {currentInterpretation.themes.map((theme, index) => (
+                            <View key={index} style={[styles.themeTag, { backgroundColor: colors.secondary }]}>
+                              <ThemedText style={[styles.themeText, { color: colors.primary }]}>
+                                {theme}
+                              </ThemedText>
+                            </View>
+                          ))}
+                        </View>
+                      </ThemedView>
+                    )}
+                  </ThemedView>
+                )}
               </ThemedView>
             )}
           </ThemedView>
@@ -258,5 +387,83 @@ const styles = StyleSheet.create({
     fontSize: 16,
     lineHeight: 26,
     letterSpacing: 0.2,
+    marginBottom: 20,
+  },
+  interpretationHistorySelector: {
+    paddingHorizontal: 20,
+    paddingVertical: 16,
+    borderBottomWidth: 1,
+    borderBottomColor: '#f0f0f0',
+  },
+  historySelectorTitle: {
+    fontSize: 14,
+    fontWeight: '600',
+    marginBottom: 12,
+  },
+  historyScroll: {
+    flexDirection: 'row',
+  },
+  historyItem: {
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+    borderRadius: 12,
+    marginRight: 12,
+    borderWidth: 1,
+    minWidth: 80,
+    alignItems: 'center',
+  },
+  historyItemText: {
+    fontSize: 14,
+    fontWeight: '600',
+    marginBottom: 4,
+  },
+  historyItemDate: {
+    fontSize: 10,
+    fontWeight: '500',
+  },
+  symbolsSection: {
+    marginBottom: 20,
+  },
+  symbolsTitle: {
+    fontSize: 16,
+    fontWeight: 'bold',
+    marginBottom: 12,
+  },
+  symbolItem: {
+    borderWidth: 1,
+    borderRadius: 8,
+    padding: 12,
+    marginBottom: 8,
+  },
+  symbolName: {
+    fontSize: 14,
+    fontWeight: '600',
+    marginBottom: 4,
+  },
+  symbolMeaning: {
+    fontSize: 13,
+    lineHeight: 18,
+  },
+  themesSection: {
+    marginBottom: 16,
+  },
+  themesTitle: {
+    fontSize: 16,
+    fontWeight: 'bold',
+    marginBottom: 12,
+  },
+  themesContainer: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 8,
+  },
+  themeTag: {
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 16,
+  },
+  themeText: {
+    fontSize: 12,
+    fontWeight: '600',
   },
 });

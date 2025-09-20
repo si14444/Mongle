@@ -199,6 +199,7 @@ export default function TimelineScreen() {
           </View>
         </ThemedView>
 
+
         <ThemedView style={styles.filterContainer}>
           <ScrollView
             horizontal

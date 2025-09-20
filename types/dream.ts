@@ -6,6 +6,7 @@ export interface Dream {
   createdAt: string;
   updatedAt: string;
   interpretation?: DreamInterpretation;
+  interpretationHistory?: DreamInterpretation[];
   tags?: string[];
   emotion?: 'positive' | 'negative' | 'neutral';
 }

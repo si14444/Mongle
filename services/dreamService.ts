@@ -88,7 +88,18 @@ export class DreamService {
       interpretations.push(newInterpretation);
       await AsyncStorage.setItem(INTERPRETATIONS_STORAGE_KEY, JSON.stringify(interpretations));
 
-      await this.updateDream(interpretation.dreamId, { interpretation: newInterpretation });
+      // Get current dream to update interpretation history
+      const dream = await this.getDreamById(interpretation.dreamId);
+      if (dream) {
+        const interpretationHistory = dream.interpretationHistory || [];
+        interpretationHistory.push(newInterpretation);
+
+        await this.updateDream(interpretation.dreamId, {
+          interpretation: newInterpretation,
+          interpretationHistory: interpretationHistory
+        });
+      }
+
       return newInterpretation;
     } catch (error) {
       console.error('Failed to save interpretation:', error);

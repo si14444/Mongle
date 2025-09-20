@@ -80,7 +80,20 @@ export default function InterpretScreen() {
         selectedDream.content
       );
       console.log("Generated interpretation:", mockInterpretation);
-      setInterpretation(mockInterpretation);
+
+      // Save interpretation to dream history
+      const savedInterpretation = await DreamService.saveInterpretation({
+        dreamId: selectedDream.id,
+        analysis: mockInterpretation.analysis,
+        symbols: mockInterpretation.symbols,
+        mood: mockInterpretation.mood,
+        themes: mockInterpretation.themes,
+      });
+
+      setInterpretation(savedInterpretation);
+
+      // Refetch dreams to update the UI
+      await refetch();
 
       // 모달 표시
       console.log("Opening interpretation modal...");
@@ -299,6 +312,23 @@ export default function InterpretScreen() {
                           >
                             {dream.title}
                           </ThemedText>
+                          {dream.interpretation && (
+                            <ThemedView
+                              style={[
+                                styles.interpretedBadge,
+                                { backgroundColor: colors.positive },
+                              ]}
+                            >
+                              <ThemedText
+                                style={[
+                                  styles.interpretedText,
+                                  { color: "white" },
+                                ]}
+                              >
+                                해석됨
+                              </ThemedText>
+                            </ThemedView>
+                          )}
                         </ThemedView>
                         <ThemedText
                           style={[
@@ -681,6 +711,16 @@ const styles = StyleSheet.create({
     justifyContent: "space-between",
     alignItems: "center",
     marginBottom: 8,
+  },
+  interpretedBadge: {
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 12,
+    marginLeft: 8,
+  },
+  interpretedText: {
+    fontSize: 10,
+    fontWeight: "600",
   },
   dreamItemTitle: {
     fontSize: 16,
