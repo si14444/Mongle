@@ -749,6 +749,7 @@ const styles = StyleSheet.create({
     justifyContent: "space-between",
     alignItems: "center",
     marginBottom: 8,
+    backgroundColor: 'transparent',
   },
   interpretedBadge: {
     paddingHorizontal: 8,
