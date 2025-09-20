@@ -92,6 +92,13 @@ export class DreamService {
       const dream = await this.getDreamById(interpretation.dreamId);
       if (dream) {
         const interpretationHistory = dream.interpretationHistory || [];
+
+        // If there's an existing interpretation and it's not already in history, add it first
+        if (dream.interpretation && !interpretationHistory.find(h => h.id === dream.interpretation!.id)) {
+          interpretationHistory.push(dream.interpretation);
+        }
+
+        // Add the new interpretation
         interpretationHistory.push(newInterpretation);
 
         await this.updateDream(interpretation.dreamId, {

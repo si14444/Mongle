@@ -25,8 +25,13 @@ export default function DreamDetailScreen() {
       setSelectedInterpretationId(interpretationId);
     } else if (dream?.interpretation) {
       setSelectedInterpretationId(dream.interpretation.id);
+    } else if (dream?.interpretationHistory && dream.interpretationHistory.length > 0) {
+      // If no current interpretation but history exists, select the latest one
+      setSelectedInterpretationId(dream.interpretationHistory[dream.interpretationHistory.length - 1].id);
+    } else {
+      setSelectedInterpretationId(null);
     }
-  }, [interpretationId, dream?.interpretation]);
+  }, [interpretationId, dream?.interpretation, dream?.interpretationHistory]);
 
   const formatDate = (dateString: string) => {
     const date = new Date(dateString);
@@ -170,7 +175,7 @@ export default function DreamDetailScreen() {
                 </ThemedView>
 
                 {/* Interpretation history selector */}
-                {dream.interpretationHistory && dream.interpretationHistory.length > 1 && (
+                {dream.interpretationHistory && dream.interpretationHistory.length > 0 && (
                   <ThemedView style={styles.interpretationHistorySelector}>
                     <ThemedText style={[styles.historySelectorTitle, { color: colors.text }]}>
                       해석 기록 ({dream.interpretationHistory.length}개)
