@@ -141,9 +141,6 @@ export default function RecordScreen() {
         >
         <ThemedView style={styles.header}>
           <ThemedView style={styles.headerLeft}>
-            <TouchableOpacity onPress={() => router.back()}>
-              <IconSymbol name="chevron.left" size={24} color={colors.primary} />
-            </TouchableOpacity>
             <ThemedText type="title" style={[styles.headerTitle, { color: colors.primary }]}>
               꿈 기록하기
             </ThemedText>
@@ -394,7 +391,6 @@ const styles = StyleSheet.create({
   headerTitle: {
     fontSize: 22,
     fontWeight: 'bold',
-    marginLeft: 12,
   },
   headerRight: {
     flexDirection: 'row',
