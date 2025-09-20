@@ -1,6 +1,6 @@
 import { LinearGradient } from 'expo-linear-gradient';
 import { router } from 'expo-router';
-import React from 'react';
+import React, { useState } from 'react';
 import { Image, ScrollView, StyleSheet, TouchableOpacity } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
@@ -10,10 +10,11 @@ import { IconSymbol } from '@/components/ui/icon-symbol';
 import { SectionHeader } from '@/components/ui/section-header';
 import { EmptyState } from '@/components/ui/empty-state';
 import { DreamCard } from '@/components/ui/dream-card';
+import { ConfirmModal } from '@/components/ui/custom-modal';
 import { Colors } from '@/constants/theme';
 import { CommonStyles } from '@/constants/common-styles';
 import { useColorScheme } from '@/hooks/use-color-scheme';
-import { useDreams, useDreamStats } from '@/hooks/useDreams';
+import { useDreams, useDreamStats, useDeleteDream } from '@/hooks/useDreams';
 import { Dream } from '@/types/dream';
 
 export default function HomeScreen() {
@@ -22,11 +23,31 @@ export default function HomeScreen() {
 
   const { data: dreams = [] } = useDreams();
   const { data: stats } = useDreamStats();
+  const deleteDreamMutation = useDeleteDream();
 
   const recentDreams = dreams.slice(0, 3);
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [dreamToDelete, setDreamToDelete] = useState<string | null>(null);
 
   const handleDreamPress = (dream: Dream) => {
     router.push(`/dream/${dream.id}` as any);
+  };
+
+  const handleDeleteDream = (dreamId: string) => {
+    setDreamToDelete(dreamId);
+    setShowDeleteModal(true);
+  };
+
+  const handleDeleteConfirm = () => {
+    if (dreamToDelete) {
+      deleteDreamMutation.mutate(dreamToDelete, {
+        onError: (error) => {
+          console.error('Failed to delete dream:', error);
+        },
+      });
+    }
+    setDreamToDelete(null);
+    setShowDeleteModal(false);
   };
 
   return (
@@ -158,6 +179,7 @@ export default function HomeScreen() {
                 key={dream.id}
                 dream={dream}
                 onPress={handleDreamPress}
+                onLongPress={(dream) => handleDeleteDream(dream.id)}
                 index={index}
               />
             ))
@@ -188,6 +210,18 @@ export default function HomeScreen() {
           </LinearGradient>
         </TouchableOpacity>
       </ScrollView>
+
+      {/* Delete Confirmation Modal */}
+      <ConfirmModal
+        visible={showDeleteModal}
+        onClose={() => setShowDeleteModal(false)}
+        onConfirm={handleDeleteConfirm}
+        title="꿈 삭제"
+        message="이 꿈을 삭제하시겠습니까?"
+        confirmText="삭제"
+        cancelText="취소"
+        type="danger"
+      />
       </LinearGradient>
     </SafeAreaView>
   );
@@ -296,6 +330,10 @@ const styles = StyleSheet.create({
   },
   iconContainer: {
     ...CommonStyles.iconContainer,
+  },
+  sectionTitle: {
+    fontSize: 18,
+    fontWeight: 'bold',
   },
   statsGrid: {
     flexDirection: 'row',

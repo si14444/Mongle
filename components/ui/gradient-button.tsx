@@ -110,7 +110,7 @@ export const GradientButton: React.FC<GradientButtonProps> = ({
       disabled={disabled || loading}
     >
       <LinearGradient
-        colors={getColors()}
+        colors={getColors() as any}
         style={[
           styles.gradient,
           {
@@ -128,7 +128,7 @@ export const GradientButton: React.FC<GradientButtonProps> = ({
           <>
             {icon && (
               <IconSymbol
-                name={icon}
+                name={icon as any}
                 size={sizeStyles.iconSize}
                 color="white"
               />

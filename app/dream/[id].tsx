@@ -8,8 +8,9 @@ import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { Colors } from '@/constants/theme';
 import { useColorScheme } from '@/hooks/use-color-scheme';
-import { useDream } from '@/hooks/useDreams';
+import { useDream, useDeleteDream } from '@/hooks/useDreams';
 import { IconSymbol } from '@/components/ui/icon-symbol';
+import { ConfirmModal } from '@/components/ui/custom-modal';
 
 export default function DreamDetailScreen() {
   const colorScheme = useColorScheme();
@@ -17,7 +18,9 @@ export default function DreamDetailScreen() {
   const { id, interpretationId } = useLocalSearchParams<{ id: string; interpretationId?: string }>();
 
   const { data: dream, isLoading, error, refetch } = useDream(id!);
+  const deleteDreamMutation = useDeleteDream();
   const [selectedInterpretationId, setSelectedInterpretationId] = useState<string | null>(null);
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
 
   // Refetch when page is focused
   useFocusEffect(
@@ -59,11 +62,27 @@ export default function DreamDetailScreen() {
   };
 
   // Get the currently selected interpretation
+  const handleDeleteDream = () => {
+    if (!dream) return;
+
+    deleteDreamMutation.mutate(dream.id, {
+      onSuccess: () => {
+        setShowDeleteModal(false);
+        router.replace('/(tabs)/timeline');
+      },
+      onError: (error) => {
+        console.error('Failed to delete dream:', error);
+        setShowDeleteModal(false);
+        // 오류 처리 (추후 토스트나 알림 추가 가능)
+      },
+    });
+  };
+
   const getCurrentInterpretation = () => {
     if (!dream || !selectedInterpretationId) return null;
 
     // Check interpretation history first
-    if (dream.interpretationHistory) {
+    if (dream?.interpretationHistory) {
       const foundInterpretation = dream.interpretationHistory.find(
         (interp) => interp.id === selectedInterpretationId
       );
@@ -118,13 +137,19 @@ export default function DreamDetailScreen() {
         start={{ x: 0, y: 0 }}
         end={{ x: 0, y: 1 }}
       >
-        {/* Header with back button */}
+        {/* Header with back button and delete button */}
         <ThemedView style={styles.headerBar}>
           <TouchableOpacity
             style={[styles.backButton, { backgroundColor: colors.card }]}
             onPress={() => router.back()}
           >
             <IconSymbol name="chevron.left" size={24} color={colors.primary} />
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={[styles.deleteButton, { backgroundColor: colors.card }]}
+            onPress={() => setShowDeleteModal(true)}
+          >
+            <IconSymbol name="trash" size={20} color={colors.negative} />
           </TouchableOpacity>
         </ThemedView>
 
@@ -141,14 +166,14 @@ export default function DreamDetailScreen() {
             <ThemedView style={styles.titleSection}>
               <ThemedView style={styles.titleContainer}>
                 <ThemedText type="title" style={[styles.title, { color: colors.text }]}>
-                  {dream.title}
+                  {dream?.title}
                 </ThemedText>
                 <ThemedView
                   style={[
                     styles.emotionIndicator,
                     {
-                      backgroundColor: getEmotionColor(dream.emotion),
-                      shadowColor: getEmotionColor(dream.emotion),
+                      backgroundColor: getEmotionColor(dream?.emotion),
+                      shadowColor: getEmotionColor(dream?.emotion),
                       shadowOffset: { width: 0, height: 2 },
                       shadowOpacity: 0.3,
                       shadowRadius: 4,
@@ -158,19 +183,19 @@ export default function DreamDetailScreen() {
                 />
               </ThemedView>
               <ThemedText style={[styles.date, { color: colors.icon }]}>
-                {formatDate(dream.date)}
+                {dream?.date ? formatDate(dream.date) : ''}
               </ThemedText>
             </ThemedView>
 
             {/* Content section */}
             <ThemedView style={styles.contentSection}>
               <ThemedText style={[styles.content, { color: colors.text }]}>
-                {dream.content}
+                {dream?.content}
               </ThemedText>
             </ThemedView>
 
             {/* Interpretation section */}
-            {(dream.interpretation || dream.interpretationHistory) && (
+            {(dream?.interpretation || dream?.interpretationHistory) && (
               <ThemedView style={[styles.interpretationSection, { borderTopColor: colors.border }]}>
                 <ThemedView style={styles.interpretationHeader}>
                   <ThemedView style={[styles.iconContainer, { backgroundColor: colors.primary + '15' }]}>
@@ -182,13 +207,13 @@ export default function DreamDetailScreen() {
                 </ThemedView>
 
                 {/* Interpretation history selector */}
-                {dream.interpretationHistory && dream.interpretationHistory.length > 0 && (
+                {dream?.interpretationHistory && dream.interpretationHistory.length > 0 && (
                   <ThemedView style={styles.interpretationHistorySelector}>
                     <ThemedText style={[styles.historySelectorTitle, { color: colors.text }]}>
-                      해석 기록 ({dream.interpretationHistory.length}개)
+                      해석 기록 ({dream?.interpretationHistory?.length || 0}개)
                     </ThemedText>
                     <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.historyScroll}>
-                      {dream.interpretationHistory.map((interpretation, index) => (
+                      {dream?.interpretationHistory?.map((interpretation, index) => (
                         <TouchableOpacity
                           key={interpretation.id}
                           style={[
@@ -246,7 +271,7 @@ export default function DreamDetailScreen() {
                         {currentInterpretation.symbols.map((symbol, index) => (
                           <ThemedView
                             key={index}
-                            style={[styles.symbolItem, { backgroundColor: colors.background, borderColor: colors.border }]}
+                            style={[styles.symbolItem, { borderColor: colors.border }]}
                           >
                             <ThemedText style={[styles.symbolName, { color: colors.accent }]}>
                               {symbol.symbol}
@@ -281,6 +306,18 @@ export default function DreamDetailScreen() {
             )}
           </ThemedView>
         </ScrollView>
+
+        {/* Delete Confirmation Modal */}
+        <ConfirmModal
+          visible={showDeleteModal}
+          onClose={() => setShowDeleteModal(false)}
+          onConfirm={handleDeleteDream}
+          title="꿈 삭제"
+          message="이 꿈을 삭제하시겠습니까? 삭제된 꿈과 해석은 복구할 수 없습니다."
+          confirmText="삭제"
+          cancelText="취소"
+          type="danger"
+        />
       </LinearGradient>
     </SafeAreaView>
   );
@@ -298,8 +335,21 @@ const styles = StyleSheet.create({
     paddingVertical: 16,
     flexDirection: 'row',
     alignItems: 'center',
+    justifyContent: 'space-between',
   },
   backButton: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    alignItems: 'center',
+    justifyContent: 'center',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 3,
+  },
+  deleteButton: {
     width: 40,
     height: 40,
     borderRadius: 20,
@@ -370,9 +420,9 @@ const styles = StyleSheet.create({
   },
   interpretationSection: {
     borderTopWidth: 1,
-    paddingTop: 24,
-    paddingHorizontal: 28,
-    paddingBottom: 28,
+    paddingTop: 20,
+    paddingHorizontal: 20,
+    paddingBottom: 20,
   },
   interpretationHeader: {
     flexDirection: 'row',
@@ -393,7 +443,7 @@ const styles = StyleSheet.create({
   },
   interpretationContent: {
     borderRadius: 16,
-    padding: 20,
+    padding: 16,
   },
   interpretation: {
     fontSize: 16,
@@ -434,12 +484,12 @@ const styles = StyleSheet.create({
     fontWeight: '500',
   },
   symbolsSection: {
-    marginBottom: 20,
+    marginBottom: 16,
   },
   symbolsTitle: {
     fontSize: 16,
     fontWeight: 'bold',
-    marginBottom: 12,
+    marginBottom: 10,
   },
   symbolItem: {
     borderWidth: 1,
@@ -457,12 +507,12 @@ const styles = StyleSheet.create({
     lineHeight: 18,
   },
   themesSection: {
-    marginBottom: 16,
+    marginBottom: 12,
   },
   themesTitle: {
     fontSize: 16,
     fontWeight: 'bold',
-    marginBottom: 12,
+    marginBottom: 10,
   },
   themesContainer: {
     flexDirection: 'row',

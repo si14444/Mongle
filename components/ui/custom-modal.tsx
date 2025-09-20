@@ -8,7 +8,7 @@ import {
   Animated,
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
-import { BlurView } from 'expo-blur';
+// import { BlurView } from 'expo-blur';
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { IconSymbol } from '@/components/ui/icon-symbol';
@@ -86,12 +86,12 @@ const CustomModal: React.FC<CustomModalProps> = ({
               >
                 {showCloseButton && (
                   <TouchableOpacity style={styles.closeButton} onPress={onClose}>
-                    <IconSymbol name="xmark" size={16} color={colors.icon} />
+                    <IconSymbol name={"xmark" as any} size={16} color={colors.icon} />
                   </TouchableOpacity>
                 )}
 
                 <ThemedView style={styles.iconContainer}>
-                  <IconSymbol name={icon.name} size={48} color={icon.color} />
+                  <IconSymbol name={icon.name as any} size={48} color={icon.color} />
                 </ThemedView>
 
                 <ThemedText type="title" style={[styles.title, { color: colors.text }]}>
@@ -180,7 +180,7 @@ const ConfirmModal: React.FC<ConfirmModalProps> = ({
                 end={{ x: 0, y: 1 }}
               >
                 <ThemedView style={styles.iconContainer}>
-                  <IconSymbol name={icon.name} size={48} color={icon.color} />
+                  <IconSymbol name={icon.name as any} size={48} color={icon.color} />
                 </ThemedView>
 
                 <ThemedText type="title" style={[styles.title, { color: colors.text }]}>

@@ -85,22 +85,24 @@ export default function InterpretScreen() {
       return;
     }
 
-    console.log("Starting interpretation for dream:", selectedDream.title);
+    console.log("Starting AI interpretation for dream:", selectedDream.title);
     setIsLoading(true);
     try {
-      // AI 해석 생성 (실제로는 외부 AI API를 호출)
-      const mockInterpretation = DreamService.generateMockInterpretation(
-        selectedDream.content
+      // AI 해석 생성 (Gemini API 호출)
+      const aiInterpretation = await DreamService.interpretDreamWithAI(
+        selectedDream.title,
+        selectedDream.content,
+        selectedDream.id
       );
-      console.log("Generated interpretation:", mockInterpretation);
+      console.log("Generated AI interpretation:", aiInterpretation);
 
       // Save interpretation to dream history using mutation
       saveInterpretationMutation.mutate({
         dreamId: selectedDream.id,
-        analysis: mockInterpretation.analysis,
-        symbols: mockInterpretation.symbols,
-        mood: mockInterpretation.mood,
-        themes: mockInterpretation.themes,
+        analysis: aiInterpretation.analysis,
+        symbols: aiInterpretation.symbols,
+        mood: aiInterpretation.mood,
+        themes: aiInterpretation.themes,
       }, {
         onSuccess: (savedInterpretation) => {
           setInterpretation(savedInterpretation);

@@ -58,7 +58,7 @@ Mongle is a React Native dream recording and interpretation app built with Expo.
 
 ### Key Features
 - **Dream Recording**: Title, content, date, emotion categorization
-- **AI Interpretation**: Mock interpretation system with symbols, themes, and mood analysis
+- **AI Interpretation**: Real AI interpretation using Google Gemini 2.0 Flash-Lite model with fallback to mock system
 - **Search & Filtering**: Search by title/content, filter by emotion
 - **Statistics**: Dream count tracking and emotion analysis
 - **Timeline View**: Monthly grouping with dream cards
@@ -93,6 +93,12 @@ Mongle is a React Native dream recording and interpretation app built with Expo.
 - All data stored locally in AsyncStorage (no backend)
 - Dreams and interpretations use separate storage keys
 - Data persists across app launches
+
+### AI Integration
+- Uses Google Gemini 2.0 Flash-Lite for dream interpretation
+- API key stored in environment variables (GEMINI_API_KEY)
+- Automatic fallback to mock interpretation if AI fails
+- Structured prompt engineering for consistent JSON responses
 
 ### React Query Configuration
 - 5-minute stale time for most queries

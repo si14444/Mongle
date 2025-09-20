@@ -1,5 +1,6 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Dream, DreamInterpretation, DreamStats } from '@/types/dream';
+import { GeminiService } from './geminiService';
 
 const DREAMS_STORAGE_KEY = 'mongle_dreams';
 const INTERPRETATIONS_STORAGE_KEY = 'mongle_interpretations';
@@ -156,14 +157,34 @@ export class DreamService {
     }
   }
 
-  static generateMockInterpretation(dreamContent: string): DreamInterpretation {
+  static async interpretDreamWithAI(dreamTitle: string, dreamContent: string, dreamId: string): Promise<DreamInterpretation> {
+    try {
+      const interpretation = await GeminiService.interpretDream(dreamTitle, dreamContent);
+
+      const newInterpretation: DreamInterpretation = {
+        id: Date.now().toString(),
+        dreamId,
+        ...interpretation,
+        createdAt: new Date().toISOString(),
+      };
+
+      return newInterpretation;
+    } catch (error) {
+      console.error('Failed to interpret dream with AI:', error);
+
+      // Fallback to mock interpretation
+      return this.generateMockInterpretation(dreamContent, dreamId);
+    }
+  }
+
+  static generateMockInterpretation(dreamContent: string, dreamId: string = ''): DreamInterpretation {
     const symbols = this.extractSymbols(dreamContent);
     const mood = this.analyzeMood(dreamContent);
     const themes = this.extractThemes(dreamContent);
 
     return {
       id: Date.now().toString(),
-      dreamId: '',
+      dreamId,
       analysis: this.generateAnalysis(dreamContent, symbols, themes),
       symbols,
       mood,

@@ -31,7 +31,7 @@ export const EmptyState: React.FC<EmptyStateProps> = ({
   return (
     <ThemedView style={styles.emptyState}>
       <ThemedView style={[styles.emptyIconContainer, { backgroundColor: colors.secondary + '30' }]}>
-        <IconSymbol name={icon} size={48} color={colors.primary} />
+        <IconSymbol name={icon as any} size={48} color={colors.primary} />
       </ThemedView>
       <ThemedText style={[styles.emptyText, { color: colors.text }]}>
         {title}
@@ -62,7 +62,7 @@ export const EmptyState: React.FC<EmptyStateProps> = ({
             start={{ x: 0, y: 0 }}
             end={{ x: 1, y: 0 }}
           >
-            <IconSymbol name={actionIcon} size={20} color="white" />
+            <IconSymbol name={actionIcon as any} size={20} color="white" />
             <ThemedText style={[styles.actionButtonText, { color: 'white' }]}>
               {actionText}
             </ThemedText>

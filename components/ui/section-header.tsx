@@ -31,7 +31,7 @@ export const SectionHeader: React.FC<SectionHeaderProps> = ({
       <ThemedView style={styles.sectionHeaderWithIcon}>
         {icon && showIconContainer && (
           <ThemedView style={[styles.iconContainer, { backgroundColor: colors.primary + '15' }]}>
-            <IconSymbol name={icon} size={18} color={colors.primary} />
+            <IconSymbol name={icon as any} size={18} color={colors.primary} />
           </ThemedView>
         )}
         <ThemedText type="subtitle" style={[styles.sectionTitle, { color: colors.primary }]}>
@@ -52,7 +52,7 @@ export const SectionHeader: React.FC<SectionHeaderProps> = ({
             <ThemedText style={[styles.actionText, { color: 'white' }]}>
               {actionText}
             </ThemedText>
-            <IconSymbol name="chevron.right" size={16} color="white" />
+            <IconSymbol name={"chevron.right" as any} size={16} color="white" />
           </LinearGradient>
         </TouchableOpacity>
       )}
