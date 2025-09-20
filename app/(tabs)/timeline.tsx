@@ -3,7 +3,6 @@ import { LinearGradient } from "expo-linear-gradient";
 import { router } from "expo-router";
 import React, { useMemo, useState } from "react";
 import {
-  Alert,
   RefreshControl,
   ScrollView,
   StyleSheet,
@@ -16,6 +15,7 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { ThemedText } from "@/components/themed-text";
 import { ThemedView } from "@/components/themed-view";
 import { IconSymbol } from "@/components/ui/icon-symbol";
+import { ConfirmModal } from "@/components/ui/custom-modal";
 import { Colors } from "@/constants/theme";
 import { useColorScheme } from "@/hooks/use-color-scheme";
 import { useDeleteDream, useDreams } from "@/hooks/useDreams";
@@ -31,6 +31,8 @@ export default function TimelineScreen() {
     "all" | "positive" | "negative" | "neutral"
   >("all");
   const [searchQuery, setSearchQuery] = useState("");
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [dreamToDelete, setDreamToDelete] = useState<string | null>(null);
 
   const filters = [
     { key: "all", label: "전체", icon: "calendar" },
@@ -76,21 +78,19 @@ export default function TimelineScreen() {
   };
 
   const handleDeleteDream = (dreamId: string) => {
-    Alert.alert("꿈 삭제", "이 꿈을 삭제하시겠습니까?", [
-      { text: "취소", style: "cancel" },
-      {
-        text: "삭제",
-        style: "destructive",
-        onPress: () => {
-          deleteDreamMutation.mutate(dreamId, {
-            onError: (error) => {
-              console.error("Failed to delete dream:", error);
-              Alert.alert("오류", "꿈을 삭제하는 중 오류가 발생했습니다.");
-            },
-          });
+    setDreamToDelete(dreamId);
+    setShowDeleteModal(true);
+  };
+
+  const handleDeleteConfirm = () => {
+    if (dreamToDelete) {
+      deleteDreamMutation.mutate(dreamToDelete, {
+        onError: (error) => {
+          console.error("Failed to delete dream:", error);
         },
-      },
-    ]);
+      });
+    }
+    setDreamToDelete(null);
   };
 
   const formatDate = (dateString: string) => {
@@ -373,6 +373,18 @@ export default function TimelineScreen() {
           )}
         </ScrollView>
       </LinearGradient>
+
+      {/* Delete Confirmation Modal */}
+      <ConfirmModal
+        visible={showDeleteModal}
+        onClose={() => setShowDeleteModal(false)}
+        onConfirm={handleDeleteConfirm}
+        title="꿈 삭제"
+        message="이 꿈을 삭제하시겠습니까?"
+        confirmText="삭제"
+        cancelText="취소"
+        type="danger"
+      />
     </SafeAreaView>
   );
 }

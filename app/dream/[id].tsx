@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { StyleSheet, ScrollView, TouchableOpacity, View } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { useLocalSearchParams, router } from 'expo-router';
+import { useLocalSearchParams, router, useFocusEffect } from 'expo-router';
 
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
@@ -16,8 +16,15 @@ export default function DreamDetailScreen() {
   const colors = Colors[colorScheme ?? 'light'];
   const { id, interpretationId } = useLocalSearchParams<{ id: string; interpretationId?: string }>();
 
-  const { data: dream, isLoading, error } = useDream(id!);
+  const { data: dream, isLoading, error, refetch } = useDream(id!);
   const [selectedInterpretationId, setSelectedInterpretationId] = useState<string | null>(null);
+
+  // Refetch when page is focused
+  useFocusEffect(
+    React.useCallback(() => {
+      refetch();
+    }, [refetch])
+  );
 
   // Set selected interpretation from URL parameter
   useEffect(() => {

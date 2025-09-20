@@ -3,7 +3,6 @@ import {
   StyleSheet,
   TextInput,
   TouchableOpacity,
-  Alert,
   ScrollView,
   KeyboardAvoidingView,
   Platform,
@@ -19,6 +18,7 @@ import { Colors } from '@/constants/theme';
 import { useColorScheme } from '@/hooks/use-color-scheme';
 import { useSaveDream } from '@/hooks/useDreams';
 import { IconSymbol } from '@/components/ui/icon-symbol';
+import { CustomModal, ConfirmModal } from '@/components/ui/custom-modal';
 
 export default function RecordScreen() {
   const colorScheme = useColorScheme();
@@ -28,6 +28,11 @@ export default function RecordScreen() {
   const [content, setContent] = useState('');
   const [selectedEmotion, setSelectedEmotion] = useState<'positive' | 'negative' | 'neutral'>('neutral');
   const [isSaving, setIsSaving] = useState(false);
+  const [showTitleModal, setShowTitleModal] = useState(false);
+  const [showContentModal, setShowContentModal] = useState(false);
+  const [showSaveModal, setShowSaveModal] = useState(false);
+  const [showErrorModal, setShowErrorModal] = useState(false);
+  const [showClearModal, setShowClearModal] = useState(false);
 
   const saveDreamMutation = useSaveDream();
 
@@ -77,12 +82,12 @@ export default function RecordScreen() {
 
   const handleSave = () => {
     if (!title.trim()) {
-      Alert.alert('제목 입력', '꿈의 제목을 입력해주세요.');
+      setShowTitleModal(true);
       return;
     }
 
     if (!content.trim()) {
-      Alert.alert('내용 입력', '꿈의 내용을 입력해주세요.');
+      setShowContentModal(true);
       return;
     }
 
@@ -95,46 +100,31 @@ export default function RecordScreen() {
 
     saveDreamMutation.mutate(dreamData, {
       onSuccess: () => {
-        Alert.alert(
-          '저장 완료',
-          '꿈이 성공적으로 저장되었습니다.',
-          [
-            {
-              text: '확인',
-              onPress: () => {
-                setTitle('');
-                setContent('');
-                setSelectedEmotion('neutral');
-                router.back();
-              },
-            },
-          ]
-        );
+        setShowSaveModal(true);
       },
       onError: (error) => {
         console.error('Failed to save dream:', error);
-        Alert.alert('오류', '꿈을 저장하는 중 오류가 발생했습니다.');
+        setShowErrorModal(true);
       },
     });
   };
 
+  const handleSaveModalClose = () => {
+    setShowSaveModal(false);
+    setTitle('');
+    setContent('');
+    setSelectedEmotion('neutral');
+    router.back();
+  };
+
   const handleClear = () => {
-    Alert.alert(
-      '내용 지우기',
-      '작성 중인 내용을 모두 지우시겠습니까?',
-      [
-        { text: '취소', style: 'cancel' },
-        {
-          text: '지우기',
-          style: 'destructive',
-          onPress: () => {
-            setTitle('');
-            setContent('');
-            setSelectedEmotion('neutral');
-          },
-        },
-      ]
-    );
+    setShowClearModal(true);
+  };
+
+  const handleClearConfirm = () => {
+    setTitle('');
+    setContent('');
+    setSelectedEmotion('neutral');
   };
 
   return (
@@ -331,6 +321,50 @@ export default function RecordScreen() {
         </ScrollView>
         </KeyboardAvoidingView>
       </LinearGradient>
+
+      {/* Modals */}
+      <CustomModal
+        visible={showTitleModal}
+        onClose={() => setShowTitleModal(false)}
+        title="제목 입력"
+        message="꿈의 제목을 입력해주세요."
+        type="warning"
+      />
+
+      <CustomModal
+        visible={showContentModal}
+        onClose={() => setShowContentModal(false)}
+        title="내용 입력"
+        message="꿈의 내용을 입력해주세요."
+        type="warning"
+      />
+
+      <CustomModal
+        visible={showSaveModal}
+        onClose={handleSaveModalClose}
+        title="저장 완료"
+        message="꿈이 성공적으로 저장되었습니다."
+        type="success"
+      />
+
+      <CustomModal
+        visible={showErrorModal}
+        onClose={() => setShowErrorModal(false)}
+        title="오류"
+        message="꿈을 저장하는 중 오류가 발생했습니다."
+        type="error"
+      />
+
+      <ConfirmModal
+        visible={showClearModal}
+        onClose={() => setShowClearModal(false)}
+        onConfirm={handleClearConfirm}
+        title="내용 지우기"
+        message="작성 중인 내용을 모두 지우시겠습니까?"
+        confirmText="지우기"
+        cancelText="취소"
+        type="danger"
+      />
     </SafeAreaView>
   );
 }

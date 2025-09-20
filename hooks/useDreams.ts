@@ -15,6 +15,7 @@ export const useDream = (dreamId: string) => {
     queryKey: ['dream', dreamId],
     queryFn: () => DreamService.getDreamById(dreamId),
     enabled: !!dreamId,
+    staleTime: 0, // Always refetch when component mounts
   });
 };
 
@@ -63,6 +64,21 @@ export const useDeleteDream = () => {
     onSuccess: () => {
       // Invalidate and refetch dreams list and stats
       queryClient.invalidateQueries({ queryKey: ['dreams'] });
+      queryClient.invalidateQueries({ queryKey: ['dreamStats'] });
+    },
+  });
+};
+
+export const useSaveInterpretation = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (interpretation: Parameters<typeof DreamService.saveInterpretation>[0]) =>
+      DreamService.saveInterpretation(interpretation),
+    onSuccess: (_, interpretation) => {
+      // Invalidate and refetch dreams list, specific dream and stats
+      queryClient.invalidateQueries({ queryKey: ['dreams'] });
+      queryClient.invalidateQueries({ queryKey: ['dream', interpretation.dreamId] });
       queryClient.invalidateQueries({ queryKey: ['dreamStats'] });
     },
   });

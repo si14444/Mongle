@@ -3,7 +3,8 @@
     "allow": [
       "Bash(npm install:*)",
       "Bash(npx tsc:*)",
-      "Bash(npm run lint)"
+      "Bash(npm run lint)",
+      "Bash(tail:*)"
     ],
     "deny": [],
     "ask": []

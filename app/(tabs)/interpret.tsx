@@ -3,7 +3,6 @@ import { LinearGradient } from "expo-linear-gradient";
 import React, { useCallback, useEffect, useState } from "react";
 import {
   ActivityIndicator,
-  Alert,
   KeyboardAvoidingView,
   Modal,
   Platform,
@@ -14,21 +13,25 @@ import {
   View,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
+import { useQueryClient } from "@tanstack/react-query";
 
 import { ThemedText } from "@/components/themed-text";
 import { ThemedView } from "@/components/themed-view";
 import { IconSymbol } from "@/components/ui/icon-symbol";
+import { CustomModal } from "@/components/ui/custom-modal";
 import { Colors } from "@/constants/theme";
 import { useColorScheme } from "@/hooks/use-color-scheme";
-import { useDreams } from "@/hooks/useDreams";
+import { useDreams, useSaveInterpretation } from "@/hooks/useDreams";
 import { DreamService } from "@/services/dreamService";
 import { Dream, DreamInterpretation } from "@/types/dream";
 
 export default function InterpretScreen() {
   const colorScheme = useColorScheme();
   const colors = Colors[colorScheme ?? "light"];
+  const queryClient = useQueryClient();
 
   const { data: dreams = [], refetch } = useDreams();
+  const saveInterpretationMutation = useSaveInterpretation();
   const [filteredDreams, setFilteredDreams] = useState<Dream[]>([]);
   const [selectedDream, setSelectedDream] = useState<Dream | null>(null);
   const [interpretation, setInterpretation] =
@@ -37,6 +40,7 @@ export default function InterpretScreen() {
   const [searchQuery, setSearchQuery] = useState("");
   const [showInterpretationModal, setShowInterpretationModal] = useState(false);
   const [showDreamDetailModal, setShowDreamDetailModal] = useState(false);
+  const [showErrorModal, setShowErrorModal] = useState(false);
 
   const filterDreams = useCallback(() => {
     if (!searchQuery.trim()) {
@@ -81,29 +85,34 @@ export default function InterpretScreen() {
       );
       console.log("Generated interpretation:", mockInterpretation);
 
-      // Save interpretation to dream history
-      const savedInterpretation = await DreamService.saveInterpretation({
+      // Save interpretation to dream history using mutation
+      saveInterpretationMutation.mutate({
         dreamId: selectedDream.id,
         analysis: mockInterpretation.analysis,
         symbols: mockInterpretation.symbols,
         mood: mockInterpretation.mood,
         themes: mockInterpretation.themes,
+      }, {
+        onSuccess: (savedInterpretation) => {
+          setInterpretation(savedInterpretation);
+          console.log("Opening interpretation modal...");
+          setShowInterpretationModal(true);
+        },
+        onError: (error) => {
+          console.error("Failed to save interpretation:", error);
+          setShowErrorModal(true);
+        }
       });
-
-      setInterpretation(savedInterpretation);
-
-      // Refetch dreams to update the UI
-      await refetch();
-
-      // 모달 표시
-      console.log("Opening interpretation modal...");
-      setShowInterpretationModal(true);
     } catch (error) {
       console.error("Failed to interpret dream:", error);
-      Alert.alert("오류", "꿈 해석 중 오류가 발생했습니다.");
+      setShowErrorModal(true);
     } finally {
       setIsLoading(false);
     }
+  };
+
+  const handleCloseInterpretationModal = () => {
+    setShowInterpretationModal(false);
   };
 
   const formatDate = (dateString: string) => {
@@ -430,7 +439,7 @@ export default function InterpretScreen() {
           animationType="slide"
           transparent={false}
           visible={showInterpretationModal}
-          onRequestClose={() => setShowInterpretationModal(false)}
+          onRequestClose={handleCloseInterpretationModal}
         >
           <LinearGradient
             colors={colors.backgroundGradient}
@@ -442,7 +451,7 @@ export default function InterpretScreen() {
               <View style={styles.modalHeader}>
                 <TouchableOpacity
                   style={[styles.backButton, { backgroundColor: colors.card }]}
-                  onPress={() => setShowInterpretationModal(false)}
+                  onPress={handleCloseInterpretationModal}
                 >
                   <IconSymbol
                     name="chevron.left"
@@ -576,6 +585,15 @@ export default function InterpretScreen() {
             </SafeAreaView>
           </LinearGradient>
         </Modal>
+
+        {/* Error Modal */}
+        <CustomModal
+          visible={showErrorModal}
+          onClose={() => setShowErrorModal(false)}
+          title="오류"
+          message="꿈 해석 중 오류가 발생했습니다."
+          type="error"
+        />
       </LinearGradient>
     </SafeAreaView>
   );
