@@ -113,16 +113,6 @@ export default function TimelineScreen() {
     }
   };
 
-  const getEmotionIcon = (emotion?: string) => {
-    switch (emotion) {
-      case "positive":
-        return "heart.fill";
-      case "negative":
-        return "cloud.fill";
-      default:
-        return "minus.circle.fill";
-    }
-  };
 
   const groupDreamsByMonth = (dreams: Dream[]) => {
     const grouped: { [key: string]: Dream[] } = {};
@@ -276,126 +266,108 @@ export default function TimelineScreen() {
             </ThemedView>
           ) : (
             Object.entries(groupedDreams).map(([monthKey, monthDreams]) => (
-              <ThemedView key={monthKey} style={styles.monthSection}>
-                <ThemedText
-                  type="subtitle"
-                  style={[styles.monthTitle, { color: colors.primary }]}
-                >
-                  {monthKey}
-                </ThemedText>
+              <ThemedView key={monthKey} style={[styles.monthSection, {
+                borderWidth: 1,
+                borderColor: colors.border,
+                shadowColor: colors.cardShadow,
+                shadowOffset: { width: 0, height: 4 },
+                shadowOpacity: 1,
+                shadowRadius: 12,
+                elevation: 8,
+              }]}>
+                <ThemedView style={styles.monthHeader}>
+                  <ThemedView style={[styles.iconContainer, { backgroundColor: colors.primary + '15' }]}>
+                    <IconSymbol name="calendar" size={18} color={colors.primary} />
+                  </ThemedView>
+                  <ThemedText
+                    type="subtitle"
+                    style={[styles.monthTitle, { color: colors.primary }]}
+                  >
+                    {monthKey}
+                  </ThemedText>
+                </ThemedView>
 
-                {monthDreams.map((dream, index) => {
-                  const dateInfo = formatDate(dream.date);
-                  return (
-                    <ThemedView key={dream.id} style={styles.timelineItem}>
-                      <ThemedView style={styles.dateContainer}>
-                        <ThemedView
-                          style={[
-                            styles.dateCircle,
-                            { backgroundColor: colors.primary },
-                          ]}
-                        >
-                          <ThemedText
-                            style={[styles.dateDay, { color: "white" }]}
-                          >
-                            {dateInfo.day}
-                          </ThemedText>
-                        </ThemedView>
-                        <ThemedText
-                          style={[styles.dateWeekday, { color: colors.icon }]}
-                        >
-                          {dateInfo.weekday}
-                        </ThemedText>
-                        {index < monthDreams.length - 1 && (
-                          <ThemedView
-                            style={[
-                              styles.timeline,
-                              { backgroundColor: colors.border },
-                            ]}
-                          />
-                        )}
-                      </ThemedView>
-
+                <ThemedView style={styles.dreamsList}>
+                  {monthDreams.map((dream, index) => {
+                    return (
                       <TouchableOpacity
-                        style={[
-                          styles.dreamCard,
-                          {
-                            backgroundColor: colors.card,
-                            borderColor: colors.border,
-                          },
-                        ]}
+                        key={dream.id}
+                        style={[styles.dreamCard, {
+                          borderWidth: 1,
+                          borderColor: colors.border,
+                          shadowColor: colors.cardShadow,
+                          shadowOffset: { width: 0, height: 2 + index },
+                          shadowOpacity: 1,
+                          shadowRadius: 8 + index,
+                          elevation: 4 + index,
+                          marginBottom: 16,
+                        }]}
                         onPress={() => handleDreamPress(dream)}
                         onLongPress={() => handleDeleteDream(dream.id)}
                       >
-                        <View style={styles.dreamHeader}>
-                          <View style={styles.dreamTitleContainer}>
-                            <ThemedText
-                              type="defaultSemiBold"
-                              style={[
-                                styles.dreamTitle,
-                                { color: colors.text },
-                              ]}
-                            >
-                              {dream.title}
-                            </ThemedText>
-                            <IconSymbol
-                              name={getEmotionIcon(dream.emotion)}
-                              size={16}
-                              color={getEmotionColor(dream.emotion)}
-                            />
-                          </View>
-                          {dream.interpretation && (
-                            <ThemedView
-                              style={[
-                                styles.interpretedBadge,
-                                { backgroundColor: colors.positive },
-                              ]}
-                            >
-                              <ThemedText
-                                style={[
-                                  styles.interpretedText,
-                                  { color: "white" },
-                                ]}
-                              >
-                                해석됨
-                              </ThemedText>
-                            </ThemedView>
-                          )}
-                        </View>
-
-                        <ThemedText
-                          style={[styles.dreamContent, { color: colors.icon }]}
-                          numberOfLines={3}
+                        <LinearGradient
+                          colors={[
+                            colors.card,
+                            getEmotionColor(dream.emotion) + '08',
+                            'transparent'
+                          ]}
+                          style={styles.dreamCardGradient}
+                          start={{ x: 0, y: 0 }}
+                          end={{ x: 1, y: 1 }}
                         >
-                          {dream.content}
-                        </ThemedText>
-
-                        {dream.tags && dream.tags.length > 0 && (
-                          <ThemedView style={styles.tagsContainer}>
-                            {dream.tags.slice(0, 3).map((tag, tagIndex) => (
-                              <ThemedView
-                                key={tagIndex}
-                                style={[
-                                  styles.tag,
-                                  { backgroundColor: colors.secondary },
-                                ]}
-                              >
-                                <ThemedText
-                                  style={[
-                                    styles.tagText,
-                                    { color: colors.primary },
-                                  ]}
-                                >
-                                  {tag}
+                          <ThemedView style={styles.dreamCardContent}>
+                            <ThemedView style={styles.dreamHeader}>
+                              <ThemedView style={styles.dreamTitleSection}>
+                                <ThemedText type="defaultSemiBold" style={[styles.dreamTitle, { color: colors.text }]}>
+                                  {dream.title}
                                 </ThemedText>
+                                <ThemedView style={styles.dreamMeta}>
+                                  <ThemedText style={[styles.dreamDate, { color: colors.icon }]}>
+                                    {formatDate(dream.date).month} {formatDate(dream.date).day}일 ({formatDate(dream.date).weekday})
+                                  </ThemedText>
+                                  <ThemedView
+                                    style={[
+                                      styles.emotionIndicator,
+                                      {
+                                        backgroundColor: getEmotionColor(dream.emotion),
+                                        shadowColor: getEmotionColor(dream.emotion),
+                                        shadowOffset: { width: 0, height: 2 },
+                                        shadowOpacity: 0.3,
+                                        shadowRadius: 4,
+                                        elevation: 2,
+                                      }
+                                    ]}
+                                  />
+                                </ThemedView>
                               </ThemedView>
-                            ))}
+                            </ThemedView>
+                            <ThemedText
+                              style={[styles.dreamContent, { color: colors.text }]}
+                              numberOfLines={3}
+                            >
+                              {dream.content}
+                            </ThemedText>
+                            <ThemedView style={styles.dreamFooter}>
+                              <ThemedView style={styles.dreamTags}>
+                                {dream.interpretation && (
+                                  <ThemedView style={[styles.interpretedTag, { borderWidth: 1, borderColor: colors.positive }]}>
+                                    <IconSymbol name="sparkles" size={12} color={colors.positive} />
+                                    <ThemedText style={[styles.interpretedTagText, { color: colors.positive }]}>
+                                      해석됨
+                                    </ThemedText>
+                                  </ThemedView>
+                                )}
+                              </ThemedView>
+                              <ThemedView style={[styles.chevronContainer, { borderWidth: 1, borderColor: colors.border }]}>
+                                <IconSymbol name="chevron.right" size={16} color={colors.primary} />
+                              </ThemedView>
+                            </ThemedView>
                           </ThemedView>
-                        )}
+                        </LinearGradient>
                       </TouchableOpacity>
-                    </ThemedView>
-                  );
-                })}
+                    );
+                  })}
+                </ThemedView>
               </ThemedView>
             ))
           )}
@@ -495,90 +467,99 @@ const styles = StyleSheet.create({
     fontWeight: "600",
   },
   monthSection: {
-    marginBottom: 30,
+    borderRadius: 20,
+    padding: 24,
+    marginBottom: 24,
+  },
+  monthHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+    marginBottom: 20,
+  },
+  iconContainer: {
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   monthTitle: {
     fontSize: 18,
     fontWeight: "bold",
-    marginBottom: 20,
   },
-  timelineItem: {
-    flexDirection: "row",
-    marginBottom: 20,
-  },
-  dateContainer: {
-    alignItems: "center",
-    width: 60,
-    marginRight: 15,
-  },
-  dateCircle: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    alignItems: "center",
-    justifyContent: "center",
-    marginBottom: 4,
-  },
-  dateDay: {
-    fontSize: 16,
-    fontWeight: "bold",
-  },
-  dateWeekday: {
-    fontSize: 12,
-  },
-  timeline: {
-    width: 2,
-    flex: 1,
-    marginTop: 10,
+  dreamsList: {
+    gap: 0,
   },
   dreamCard: {
-    flex: 1,
-    borderWidth: 1,
-    borderRadius: 12,
-    padding: 16,
+    borderRadius: 20,
+    overflow: 'hidden',
+  },
+  dreamCardGradient: {
+    borderRadius: 20,
+  },
+  dreamCardContent: {
+    padding: 24,
   },
   dreamHeader: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "flex-start",
-    marginBottom: 8,
+    marginBottom: 16,
   },
-  dreamTitleContainer: {
-    flex: 1,
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 8,
+  dreamTitleSection: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'flex-start',
   },
   dreamTitle: {
-    fontSize: 16,
+    fontSize: 18,
+    fontWeight: '700',
     flex: 1,
+    marginRight: 12,
   },
-  interpretedBadge: {
-    paddingHorizontal: 8,
-    paddingVertical: 4,
-    borderRadius: 12,
+  dreamMeta: {
+    alignItems: 'flex-end',
+    gap: 8,
   },
-  interpretedText: {
-    fontSize: 10,
-    fontWeight: "600",
+  dreamDate: {
+    fontSize: 12,
+    fontWeight: '500',
+  },
+  emotionIndicator: {
+    width: 16,
+    height: 16,
+    borderRadius: 8,
   },
   dreamContent: {
-    fontSize: 14,
-    lineHeight: 20,
-    marginBottom: 12,
+    fontSize: 15,
+    lineHeight: 24,
+    marginBottom: 20,
+    opacity: 0.9,
   },
-  tagsContainer: {
-    flexDirection: "row",
-    flexWrap: "wrap",
-    gap: 6,
+  dreamFooter: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
   },
-  tag: {
-    paddingHorizontal: 8,
-    paddingVertical: 4,
+  dreamTags: {
+    flexDirection: 'row',
+    gap: 8,
+  },
+  interpretedTag: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 10,
+    paddingVertical: 6,
     borderRadius: 12,
+    gap: 4,
   },
-  tagText: {
-    fontSize: 12,
-    fontWeight: "600",
+  interpretedTagText: {
+    fontSize: 11,
+    fontWeight: '600',
+  },
+  chevronContainer: {
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
 });
