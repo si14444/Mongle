@@ -1,16 +1,16 @@
 {
   "expo": {
-    "name": "Mongle",
-    "slug": "Mongle",
+    "name": "꿈틀",
+    "slug": "DreamTle",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
-    "scheme": "mongle",
+    "scheme": "dreamtle",
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.si14444.Mongle",
+      "bundleIdentifier": "com.si14444.DreamTle",
       "infoPlist": {
         "ITSAppUsesNonExemptEncryption": false
       }
