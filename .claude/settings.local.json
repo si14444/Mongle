@@ -4,7 +4,8 @@
       "Bash(npm install:*)",
       "Bash(npx tsc:*)",
       "Bash(npm run lint)",
-      "Bash(tail:*)"
+      "Bash(tail:*)",
+      "Bash(npm uninstall:*)"
     ],
     "deny": [],
     "ask": []

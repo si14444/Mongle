@@ -1,17 +1,18 @@
 import { DreamInterpretation, DreamSymbol } from "@/types/dream";
-import { GEMINI_API_KEY } from "@env";
+import Constants from 'expo-constants';
 
 export class GeminiService {
   private static getAI() {
     try {
       // Check if API key is available
-      if (!GEMINI_API_KEY) {
+      const apiKey = Constants.expoConfig?.extra?.GEMINI_API_KEY;
+      if (!apiKey) {
         throw new Error("GEMINI_API_KEY not found");
       }
 
       // Try to import GoogleGenAI dynamically
       const { GoogleGenAI } = require("@google/genai");
-      return new GoogleGenAI({ apiKey: GEMINI_API_KEY });
+      return new GoogleGenAI({ apiKey });
     } catch (error) {
       console.warn("Failed to initialize GoogleGenAI:", error);
       return null;
