@@ -5,7 +5,8 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { HapticTab } from '@/components/haptic-tab';
 import { IconSymbol } from '@/components/ui/icon-symbol';
-import { TabLayoutWithAd } from '@/components/layout/tab-layout-with-ad';
+import { AdBanner } from '@/components/ads/ad-banner';
+import { BannerAdSize } from 'react-native-google-mobile-ads';
 import { Colors } from '@/constants/theme';
 import { useColorScheme } from '@/hooks/use-color-scheme';
 
@@ -14,7 +15,7 @@ export default function TabLayout() {
   const insets = useSafeAreaInsets();
 
   return (
-    <TabLayoutWithAd>
+    <View style={{ flex: 1 }}>
       <Tabs
         screenOptions={{
           tabBarActiveTintColor: Colors[colorScheme ?? 'light'].tint,
@@ -22,13 +23,14 @@ export default function TabLayout() {
           tabBarButton: HapticTab,
           tabBarStyle: {
             position: 'absolute',
-            bottom: 0,
+            bottom: insets.bottom,
             left: 0,
             right: 0,
-            paddingBottom: insets.bottom,
             backgroundColor: Colors[colorScheme ?? 'light'].background,
             borderTopWidth: 1,
             borderTopColor: Colors[colorScheme ?? 'light'].border,
+            height: 65,
+            paddingTop: 8,
           },
         }}>
         <Tabs.Screen
@@ -60,6 +62,21 @@ export default function TabLayout() {
           }}
         />
       </Tabs>
-    </TabLayoutWithAd>
+
+      {/* 광고 배너 - 탭 바 바로 위에 고정 */}
+      <View style={[styles.adContainer, { bottom: 65 + insets.bottom }]}>
+        <AdBanner size={BannerAdSize.BANNER} />
+      </View>
+    </View>
   );
 }
+
+const styles = StyleSheet.create({
+  adContainer: {
+    position: 'absolute',
+    left: 0,
+    right: 0,
+    zIndex: 1000,
+    elevation: 1000,
+  },
+});

@@ -1,7 +1,7 @@
 {
   "expo": {
     "name": "꿈틀",
-    "slug": "DreamTle",
+    "slug": "Mongle",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
@@ -47,9 +47,15 @@
         "react-native-google-mobile-ads",
         {
           "android_app_id": "ca-app-pub-4535163023491412~1761588747",
-          "ios_app_id": "ca-app-pub-4535163023491412~1277274569",
-          "delay_app_measurement_init": true,
-          "delay_initialization": true
+          "ios_app_id": "ca-app-pub-4535163023491412~1277274569"
+        }
+      ],
+      [
+        "expo-build-properties",
+        {
+          "ios": {
+            "useFrameworks": "static"
+          }
         }
       ]
     ],
@@ -60,6 +66,10 @@
     "extra": {
       "router": {},
       "GEMINI_API_KEY": "${GEMINI_API_KEY}",
+      "EXPO_PUBLIC_ADMOB_IOS_BANNER_ID": "${EXPO_PUBLIC_ADMOB_IOS_BANNER_ID}",
+      "EXPO_PUBLIC_ADMOB_IOS_REWARD_ID": "${EXPO_PUBLIC_ADMOB_IOS_REWARD_ID}",
+      "EXPO_PUBLIC_ADMOB_ANDROID_BANNER_ID": "${EXPO_PUBLIC_ADMOB_ANDROID_BANNER_ID}",
+      "EXPO_PUBLIC_ADMOB_ANDROID_REWARD_ID": "${EXPO_PUBLIC_ADMOB_ANDROID_REWARD_ID}",
       "eas": {
         "projectId": "8dee4572-ba69-4102-947e-9d8268d3a7a8"
       }

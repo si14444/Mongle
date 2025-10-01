@@ -5,7 +5,8 @@
       "Bash(npx tsc:*)",
       "Bash(npm run lint)",
       "Bash(tail:*)",
-      "Bash(npm uninstall:*)"
+      "Bash(npm uninstall:*)",
+      "Bash(pkill:*)"
     ],
     "deny": [],
     "ask": []

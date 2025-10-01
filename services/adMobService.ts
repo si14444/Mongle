@@ -28,18 +28,25 @@ export class AdMobService {
       });
 
       // GDPR 동의 처리 (유럽 사용자용)
-      const consentInfo = await AdsConsent.requestInfoUpdate();
+      try {
+        const consentInfo = await AdsConsent.requestInfoUpdate();
 
-      if (consentInfo.status === AdsConsentStatus.REQUIRED) {
-        // 동의 폼 표시가 필요한 경우
-        await AdsConsent.showForm();
+        if (consentInfo.status === AdsConsentStatus.REQUIRED) {
+          // 동의 폼 표시가 필요한 경우
+          await AdsConsent.showForm();
+        }
+      } catch (consentError) {
+        // GDPR 동의 폼이 설정되지 않았거나 사용할 수 없는 경우 무시
+        // 광고는 여전히 작동할 수 있음
+        console.log('AdMob consent form not configured, continuing without GDPR consent');
       }
 
       this.initialized = true;
       console.log('AdMob initialized successfully');
     } catch (error) {
       console.error('Failed to initialize AdMob:', error);
-      throw error;
+      // 에러를 throw하지 않고 무시하여 앱 실행 계속
+      this.initialized = false;
     }
   }
 

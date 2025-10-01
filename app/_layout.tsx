@@ -16,10 +16,8 @@ export default function RootLayout() {
   const colorScheme = useColorScheme();
 
   useEffect(() => {
-    // AdMob 초기화
-    AdMobService.initialize().catch((error) => {
-      console.error('AdMob initialization failed:', error);
-    });
+    // AdMob 초기화 (에러는 내부적으로 처리됨)
+    AdMobService.initialize();
   }, []);
 
   return (
