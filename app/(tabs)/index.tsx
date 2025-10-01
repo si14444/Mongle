@@ -47,6 +47,7 @@ export default function HomeScreen() {
       >
         <ScrollView
           style={styles.scrollView}
+          contentContainerStyle={styles.scrollViewContent}
           showsVerticalScrollIndicator={false}
         >
           <ThemedView style={styles.headerContainer}>
@@ -272,7 +273,10 @@ const styles = StyleSheet.create({
   },
   scrollView: {
     flex: 1,
+  },
+  scrollViewContent: {
     paddingHorizontal: 20,
+    paddingBottom: 130, // 광고 배너 + 탭 바 높이
   },
   headerContainer: {
     marginBottom: 20,

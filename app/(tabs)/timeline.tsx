@@ -175,6 +175,7 @@ export default function TimelineScreen() {
 
         <ScrollView
           style={styles.content}
+          contentContainerStyle={styles.contentContainer}
           refreshControl={
             <RefreshControl
               refreshing={isRefetching}
@@ -308,7 +309,10 @@ const styles = StyleSheet.create({
   },
   content: {
     flex: 1,
+  },
+  contentContainer: {
     ...CommonStyles.paddingHorizontal20,
+    paddingBottom: 130, // 광고 배너 + 탭 바 높이
   },
   emptyState: {
     ...CommonStyles.centerAlign,

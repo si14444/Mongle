@@ -251,6 +251,7 @@ export default function InterpretScreen() {
 
           <ScrollView
             style={styles.content}
+            contentContainerStyle={styles.contentContainer}
             showsVerticalScrollIndicator={false}
           >
             {filteredDreams.length === 0 ? (
@@ -666,7 +667,10 @@ const styles = StyleSheet.create({
   },
   content: {
     flex: 1,
+  },
+  contentContainer: {
     paddingHorizontal: 20,
+    paddingBottom: 130, // 광고 배너 + 탭 바 높이
   },
   emptyState: {
     alignItems: "center",

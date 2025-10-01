@@ -176,6 +176,7 @@ export default function RecordScreen() {
 
           <ScrollView
             style={styles.content}
+            contentContainerStyle={styles.contentContainer}
             showsVerticalScrollIndicator={false}
           >
             <ThemedView
@@ -467,7 +468,10 @@ const styles = StyleSheet.create({
   },
   content: {
     flex: 1,
+  },
+  contentContainer: {
     paddingHorizontal: 20,
+    paddingBottom: 130, // 광고 배너 + 탭 바 높이
   },
   inputContainer: {
     borderRadius: 20,
