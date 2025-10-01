@@ -52,23 +52,36 @@ export default function HomeScreen() {
         >
           <ThemedView style={styles.headerContainer}>
             <LinearGradient
-              colors={[colors.primary + "15", "transparent"]}
+              colors={[
+                colors.primary + "20",
+                colors.accent + "10",
+                "transparent",
+              ]}
               style={styles.headerGradient}
               start={{ x: 0, y: 0 }}
               end={{ x: 1, y: 1 }}
             >
               <ThemedView style={styles.header}>
-                <ThemedText style={[styles.subtitle, { color: colors.icon }]}>
-                  당신의 꿈을 기록하고 해석해보세요
-                </ThemedText>
+                {/* 앱 아이콘 */}
                 <ThemedView style={styles.appIconContainer}>
                   <ThemedView style={styles.iconWrapper}>
                     <Image
                       source={require("@/assets/images/icon.png")}
                       style={styles.appIcon}
                     />
-                    <ThemedView style={styles.iconGlow} />
                   </ThemedView>
+                </ThemedView>
+
+                {/* 타이틀 */}
+                <ThemedView style={styles.titleContainer}>
+                  <ThemedText
+                    style={[styles.mainTitle, { color: colors.primary }]}
+                  >
+                    꿈틀
+                  </ThemedText>
+                  <ThemedText style={[styles.subtitle, { color: colors.icon }]}>
+                    당신의 꿈을 기록하고 해석해보세요
+                  </ThemedText>
                 </ThemedView>
               </ThemedView>
             </LinearGradient>
@@ -287,19 +300,20 @@ const styles = StyleSheet.create({
     overflow: "hidden",
   },
   header: {
-    paddingVertical: 50,
+    paddingVertical: 20,
     paddingHorizontal: 20,
     alignItems: "center",
     position: "relative",
   },
   titleContainer: {
     alignItems: "center",
-    marginBottom: 16,
+    marginTop: 20,
   },
-  titleWrapper: {
-    flexDirection: "row",
-    alignItems: "center",
-    marginBottom: 8,
+  mainTitle: {
+    fontSize: 48,
+    lineHeight: 56,
+    fontWeight: "bold",
+    marginBottom: 12,
   },
   titleEmoji: {
     fontSize: 36,
@@ -311,7 +325,6 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 42,
     fontWeight: "bold",
-    letterSpacing: -2,
   },
   titleSubtext: {
     fontSize: 12,
@@ -320,18 +333,10 @@ const styles = StyleSheet.create({
     marginTop: 2,
   },
   subtitle: {
-    fontSize: 16,
+    fontSize: 15,
     textAlign: "center",
-    opacity: 0.8,
+    opacity: 0.75,
     fontWeight: "500",
-  },
-  decorativeElements: {
-    position: "absolute",
-    top: 0,
-    left: 0,
-    right: 0,
-    bottom: 0,
-    pointerEvents: "none",
   },
   floatingDot: {
     position: "absolute",
@@ -434,8 +439,7 @@ const styles = StyleSheet.create({
   },
   appIconContainer: {
     alignItems: "center",
-    marginTop: 10,
-    marginBottom: 4,
+    marginBottom: 0,
   },
   iconWrapper: {
     position: "relative",
@@ -443,28 +447,28 @@ const styles = StyleSheet.create({
     justifyContent: "center",
   },
   appIcon: {
-    width: 72,
-    height: 72,
-    borderRadius: 18,
+    width: 96,
+    height: 96,
+    borderRadius: 24,
     shadowColor: "#1E3A8A",
-    shadowOffset: { width: 0, height: 6 },
-    shadowOpacity: 0.3,
-    shadowRadius: 12,
-    elevation: 10,
-    borderWidth: 3,
-    borderColor: "rgba(255, 255, 255, 0.8)",
+    shadowOffset: { width: 0, height: 8 },
+    shadowOpacity: 0.4,
+    shadowRadius: 16,
+    elevation: 12,
+    borderWidth: 4,
+    borderColor: "rgba(255, 255, 255, 0.9)",
   },
   iconGlow: {
     position: "absolute",
-    width: 84,
-    height: 84,
-    borderRadius: 21,
-    backgroundColor: "rgba(30, 58, 138, 0.1)",
+    width: 110,
+    height: 110,
+    borderRadius: 27,
+    backgroundColor: "rgba(30, 58, 138, 0.15)",
     zIndex: -1,
     shadowColor: "#1E3A8A",
     shadowOffset: { width: 0, height: 0 },
-    shadowOpacity: 0.4,
-    shadowRadius: 20,
-    elevation: 5,
+    shadowOpacity: 0.5,
+    shadowRadius: 24,
+    elevation: 6,
   },
 });
