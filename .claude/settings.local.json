@@ -6,7 +6,8 @@
       "Bash(npm run lint)",
       "Bash(tail:*)",
       "Bash(npm uninstall:*)",
-      "Bash(pkill:*)"
+      "Bash(pkill:*)",
+      "Bash(cat:*)"
     ],
     "deny": [],
     "ask": []

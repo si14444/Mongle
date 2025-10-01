@@ -1,4 +1,5 @@
 import { useFocusEffect } from "@react-navigation/native";
+import { useQueryClient } from "@tanstack/react-query";
 import { LinearGradient } from "expo-linear-gradient";
 import React, { useCallback, useEffect, useState } from "react";
 import {
@@ -8,22 +9,20 @@ import {
   Platform,
   ScrollView,
   StyleSheet,
-  TextInput,
   TouchableOpacity,
   View,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { useQueryClient } from "@tanstack/react-query";
 
 import { ThemedText } from "@/components/themed-text";
 import { ThemedView } from "@/components/themed-view";
+import { CustomModal } from "@/components/ui/custom-modal";
 import { IconSymbol } from "@/components/ui/icon-symbol";
 import { SearchBar } from "@/components/ui/search-bar";
-import { CustomModal } from "@/components/ui/custom-modal";
 import { Colors } from "@/constants/theme";
-import { CommonStyles } from "@/constants/common-styles";
 import { useColorScheme } from "@/hooks/use-color-scheme";
 import { useDreams, useSaveInterpretation } from "@/hooks/useDreams";
+import { AdMobService } from "@/services/adMobService";
 import { DreamService } from "@/services/dreamService";
 import { Dream, DreamInterpretation } from "@/types/dream";
 
@@ -43,7 +42,10 @@ export default function InterpretScreen() {
   const [showInterpretationModal, setShowInterpretationModal] = useState(false);
   const [showDreamDetailModal, setShowDreamDetailModal] = useState(false);
   const [showErrorModal, setShowErrorModal] = useState(false);
-  const [showAlreadyInterpretedModal, setShowAlreadyInterpretedModal] = useState(false);
+  const [showAlreadyInterpretedModal, setShowAlreadyInterpretedModal] =
+    useState(false);
+  const [showAdPromptModal, setShowAdPromptModal] = useState(false);
+  const [isLoadingAd, setIsLoadingAd] = useState(false);
 
   const filterDreams = useCallback(() => {
     if (!searchQuery.trim()) {
@@ -85,6 +87,40 @@ export default function InterpretScreen() {
       return;
     }
 
+    // 광고 시청 안내 모달 표시
+    setShowAdPromptModal(true);
+  };
+
+  const handleAdPromptConfirm = async () => {
+    setShowAdPromptModal(false);
+    setIsLoadingAd(true);
+
+    try {
+      // 보상형 광고 로드
+      await AdMobService.loadRewardedAd();
+
+      // 광고 표시
+      const earned = await AdMobService.showRewardedAd();
+
+      if (earned) {
+        // 광고를 끝까지 시청한 경우에만 해석 진행
+        await performInterpretation();
+      } else {
+        // 광고를 끝까지 보지 않은 경우
+        console.log("User did not complete watching the ad");
+      }
+    } catch (error) {
+      console.error("Failed to show rewarded ad:", error);
+      // 광고 로드/표시 실패 시 그냥 해석 진행 (사용자 경험 개선)
+      await performInterpretation();
+    } finally {
+      setIsLoadingAd(false);
+    }
+  };
+
+  const performInterpretation = async () => {
+    if (!selectedDream) return;
+
     console.log("Starting AI interpretation for dream:", selectedDream.title);
     setIsLoading(true);
     try {
@@ -97,23 +133,26 @@ export default function InterpretScreen() {
       console.log("Generated AI interpretation:", aiInterpretation);
 
       // Save interpretation to dream history using mutation
-      saveInterpretationMutation.mutate({
-        dreamId: selectedDream.id,
-        analysis: aiInterpretation.analysis,
-        symbols: aiInterpretation.symbols,
-        mood: aiInterpretation.mood,
-        themes: aiInterpretation.themes,
-      }, {
-        onSuccess: (savedInterpretation) => {
-          setInterpretation(savedInterpretation);
-          console.log("Opening interpretation modal...");
-          setShowInterpretationModal(true);
+      saveInterpretationMutation.mutate(
+        {
+          dreamId: selectedDream.id,
+          analysis: aiInterpretation.analysis,
+          symbols: aiInterpretation.symbols,
+          mood: aiInterpretation.mood,
+          themes: aiInterpretation.themes,
         },
-        onError: (error) => {
-          console.error("Failed to save interpretation:", error);
-          setShowErrorModal(true);
+        {
+          onSuccess: (savedInterpretation) => {
+            setInterpretation(savedInterpretation);
+            console.log("Opening interpretation modal...");
+            setShowInterpretationModal(true);
+          },
+          onError: (error) => {
+            console.error("Failed to save interpretation:", error);
+            setShowErrorModal(true);
+          },
         }
-      });
+      );
     } catch (error) {
       console.error("Failed to interpret dream:", error);
       setShowErrorModal(true);
@@ -180,7 +219,7 @@ export default function InterpretScreen() {
               style={[
                 styles.selectedDreamSection,
                 {
-                  backgroundColor: colors.primary + '10',
+                  backgroundColor: colors.primary + "10",
                   shadowColor: colors.cardShadow,
                   shadowOffset: { width: 0, height: 4 },
                   shadowOpacity: 1,
@@ -216,9 +255,13 @@ export default function InterpretScreen() {
                   style={[
                     styles.interpretButton,
                     {
-                      backgroundColor: selectedDream?.interpretation ? colors.neutral : colors.primary,
+                      backgroundColor: selectedDream?.interpretation
+                        ? colors.neutral
+                        : colors.primary,
                       opacity: isLoading ? 0.6 : 1,
-                      shadowColor: selectedDream?.interpretation ? colors.neutral : colors.primary,
+                      shadowColor: selectedDream?.interpretation
+                        ? colors.neutral
+                        : colors.primary,
                       shadowOffset: { width: 0, height: 2 },
                       shadowOpacity: 0.3,
                       shadowRadius: 4,
@@ -233,14 +276,20 @@ export default function InterpretScreen() {
                   ) : (
                     <>
                       <IconSymbol
-                        name={selectedDream?.interpretation ? "checkmark.circle" : "brain"}
+                        name={
+                          selectedDream?.interpretation
+                            ? "checkmark.circle"
+                            : "brain"
+                        }
                         size={16}
                         color="white"
                       />
                       <ThemedText
                         style={[styles.interpretButtonText, { color: "white" }]}
                       >
-                        {selectedDream?.interpretation ? "이미 해석됨" : "해석하기"}
+                        {selectedDream?.interpretation
+                          ? "이미 해석됨"
+                          : "해석하기"}
                       </ThemedText>
                     </>
                   )}
@@ -284,7 +333,7 @@ export default function InterpretScreen() {
                           {
                             backgroundColor:
                               selectedDream?.id === dream.id
-                                ? colors.primary + '20'
+                                ? colors.primary + "20"
                                 : "transparent",
                             borderColor:
                               selectedDream?.id === dream.id
@@ -586,6 +635,80 @@ export default function InterpretScreen() {
           message="이 꿈은 이미 해석되었습니다. 타임라인에서 해석 결과를 확인하세요."
           type="warning"
         />
+
+        {/* Ad Prompt Modal */}
+        <Modal
+          animationType="fade"
+          transparent={true}
+          visible={showAdPromptModal}
+          onRequestClose={() => setShowAdPromptModal(false)}
+        >
+          <View style={styles.adPromptOverlay}>
+            <View
+              style={[
+                styles.adPromptContainer,
+                { backgroundColor: colors.card },
+              ]}
+            >
+              <IconSymbol
+                name="play.circle.fill"
+                size={64}
+                color={colors.primary}
+              />
+
+              <ThemedText
+                type="title"
+                style={[styles.adPromptTitle, { color: colors.primary }]}
+              >
+                광고 시청 후 해석
+              </ThemedText>
+
+              <ThemedText
+                style={[styles.adPromptMessage, { color: colors.text }]}
+              >
+                꿈 해석을 위해 짧은 광고를 시청해주세요.{"\n"}
+                광고를 끝까지 시청하시면 AI 해석 결과를 확인하실 수 있습니다.
+              </ThemedText>
+
+              <View style={styles.adPromptButtons}>
+                <TouchableOpacity
+                  style={[
+                    styles.adPromptButton,
+                    styles.adPromptCancelButton,
+                    { borderColor: colors.border },
+                  ]}
+                  onPress={() => setShowAdPromptModal(false)}
+                >
+                  <ThemedText
+                    style={[styles.adPromptButtonText, { color: colors.text }]}
+                  >
+                    취소
+                  </ThemedText>
+                </TouchableOpacity>
+
+                <TouchableOpacity
+                  style={[
+                    styles.adPromptButton,
+                    styles.adPromptConfirmButton,
+                    { backgroundColor: colors.primary },
+                  ]}
+                  onPress={handleAdPromptConfirm}
+                  disabled={isLoadingAd}
+                >
+                  {isLoadingAd ? (
+                    <ActivityIndicator size="small" color="white" />
+                  ) : (
+                    <ThemedText
+                      style={[styles.adPromptButtonText, { color: "white" }]}
+                    >
+                      광고 시청하기
+                    </ThemedText>
+                  )}
+                </TouchableOpacity>
+              </View>
+            </View>
+          </View>
+        </Modal>
       </LinearGradient>
     </SafeAreaView>
   );
@@ -708,7 +831,7 @@ const styles = StyleSheet.create({
     justifyContent: "space-between",
     alignItems: "center",
     marginBottom: 8,
-    backgroundColor: 'transparent',
+    backgroundColor: "transparent",
   },
   interpretedBadge: {
     paddingHorizontal: 8,
@@ -815,7 +938,7 @@ const styles = StyleSheet.create({
   },
   modalContent: {
     flex: 1,
-    paddingTop: 20,
+    paddingTop: 0,
   },
   modalHeader: {
     flexDirection: "row",
@@ -928,5 +1051,66 @@ const styles = StyleSheet.create({
     fontSize: 18,
     lineHeight: 28,
     letterSpacing: 0.3,
+  },
+  // Ad Prompt Modal styles
+  adPromptOverlay: {
+    flex: 1,
+    backgroundColor: "rgba(0, 0, 0, 0.6)",
+    justifyContent: "center",
+    alignItems: "center",
+    paddingHorizontal: 20,
+  },
+  adPromptContainer: {
+    width: "100%",
+    maxWidth: 400,
+    borderRadius: 24,
+    padding: 32,
+    alignItems: "center",
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 8 },
+    shadowOpacity: 0.3,
+    shadowRadius: 16,
+    elevation: 10,
+  },
+  adPromptTitle: {
+    fontSize: 24,
+    fontWeight: "bold",
+    marginTop: 20,
+    marginBottom: 16,
+    textAlign: "center",
+  },
+  adPromptMessage: {
+    fontSize: 16,
+    lineHeight: 24,
+    textAlign: "center",
+    marginBottom: 32,
+  },
+  adPromptButtons: {
+    flexDirection: "row",
+    width: "100%",
+    gap: 12,
+  },
+  adPromptButton: {
+    flex: 1,
+    paddingVertical: 14,
+    borderRadius: 16,
+    alignItems: "center",
+    justifyContent: "center",
+    minHeight: 50,
+  },
+  adPromptCancelButton: {
+    borderWidth: 2,
+    backgroundColor: "transparent",
+  },
+  adPromptConfirmButton: {
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.2,
+    shadowRadius: 8,
+    elevation: 4,
+  },
+  adPromptButtonText: {
+    fontSize: 16,
+    fontWeight: "600",
   },
 });

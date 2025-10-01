@@ -1,8 +1,16 @@
 import { Platform } from 'react-native';
-import mobileAds, { MaxAdContentRating, AdsConsent, AdsConsentStatus } from 'react-native-google-mobile-ads';
+import mobileAds, {
+  MaxAdContentRating,
+  AdsConsent,
+  AdsConsentStatus,
+  RewardedAd,
+  RewardedAdEventType,
+  AdEventType
+} from 'react-native-google-mobile-ads';
 
 export class AdMobService {
   private static initialized = false;
+  private static rewardedAd: RewardedAd | null = null;
 
   static async initialize(): Promise<void> {
     if (this.initialized) {
@@ -72,5 +80,94 @@ export class AdMobService {
         ? process.env.EXPO_PUBLIC_ADMOB_ANDROID_BANNER_ID || ''
         : process.env.EXPO_PUBLIC_ADMOB_ANDROID_REWARD_ID || '';
     }
+  }
+
+  /**
+   * 보상형 광고 로드
+   */
+  static async loadRewardedAd(): Promise<void> {
+    const adUnitId = this.getAdUnitId('reward');
+
+    if (!adUnitId) {
+      throw new Error('Rewarded ad unit ID not configured');
+    }
+
+    this.rewardedAd = RewardedAd.createForAdRequest(adUnitId, {
+      requestNonPersonalizedAdsOnly: false,
+    });
+
+    return new Promise((resolve, reject) => {
+      if (!this.rewardedAd) {
+        reject(new Error('Failed to create rewarded ad'));
+        return;
+      }
+
+      const loadedListener = this.rewardedAd.addAdEventListener(
+        RewardedAdEventType.LOADED,
+        () => {
+          console.log('Rewarded ad loaded');
+          loadedListener();
+          resolve();
+        }
+      );
+
+      const errorListener = this.rewardedAd.addAdEventListener(
+        AdEventType.ERROR,
+        (error) => {
+          console.error('Rewarded ad failed to load:', error);
+          errorListener();
+          reject(error);
+        }
+      );
+
+      this.rewardedAd.load();
+    });
+  }
+
+  /**
+   * 보상형 광고 표시
+   * @returns Promise<boolean> - 광고를 끝까지 시청했는지 여부
+   */
+  static async showRewardedAd(): Promise<boolean> {
+    if (!this.rewardedAd) {
+      throw new Error('Rewarded ad not loaded. Call loadRewardedAd() first.');
+    }
+
+    return new Promise((resolve, reject) => {
+      if (!this.rewardedAd) {
+        reject(new Error('Rewarded ad not available'));
+        return;
+      }
+
+      let earned = false;
+
+      const earnedListener = this.rewardedAd.addAdEventListener(
+        RewardedAdEventType.EARNED_REWARD,
+        (reward) => {
+          console.log('User earned reward:', reward);
+          earned = true;
+        }
+      );
+
+      const closedListener = this.rewardedAd.addAdEventListener(
+        AdEventType.CLOSED,
+        () => {
+          console.log('Rewarded ad closed, earned:', earned);
+          earnedListener();
+          closedListener();
+          this.rewardedAd = null; // 광고 인스턴스 초기화
+          resolve(earned);
+        }
+      );
+
+      this.rewardedAd.show();
+    });
+  }
+
+  /**
+   * 보상형 광고가 로드되어 있는지 확인
+   */
+  static isRewardedAdLoaded(): boolean {
+    return this.rewardedAd !== null;
   }
 }

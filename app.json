@@ -46,8 +46,8 @@
       [
         "react-native-google-mobile-ads",
         {
-          "android_app_id": "ca-app-pub-4535163023491412~1761588747",
-          "ios_app_id": "ca-app-pub-4535163023491412~1277274569"
+          "androidAppId": "ca-app-pub-4535163023491412~1761588747",
+          "iosAppId": "ca-app-pub-4535163023491412~1277274569"
         }
       ],
       [
@@ -65,7 +65,7 @@
     },
     "extra": {
       "router": {},
-      "GEMINI_API_KEY": "${GEMINI_API_KEY}",
+      "EXPO_PUBLIC_GEMINI_API_KEY": "${EXPO_PUBLIC_GEMINI_API_KEY}",
       "EXPO_PUBLIC_ADMOB_IOS_BANNER_ID": "${EXPO_PUBLIC_ADMOB_IOS_BANNER_ID}",
       "EXPO_PUBLIC_ADMOB_IOS_REWARD_ID": "${EXPO_PUBLIC_ADMOB_IOS_REWARD_ID}",
       "EXPO_PUBLIC_ADMOB_ANDROID_BANNER_ID": "${EXPO_PUBLIC_ADMOB_ANDROID_BANNER_ID}",

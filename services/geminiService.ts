@@ -4,11 +4,15 @@ import Constants from 'expo-constants';
 export class GeminiService {
   private static getAI() {
     try {
-      // Check if API key is available
-      const apiKey = Constants.expoConfig?.extra?.GEMINI_API_KEY;
-      if (!apiKey) {
-        throw new Error("GEMINI_API_KEY not found");
+      // Check if API key is available - use process.env for Expo environment variables
+      const apiKey = process.env.EXPO_PUBLIC_GEMINI_API_KEY || Constants.expoConfig?.extra?.EXPO_PUBLIC_GEMINI_API_KEY;
+
+      if (!apiKey || apiKey.startsWith('${')) {
+        console.error("EXPO_PUBLIC_GEMINI_API_KEY not found or not loaded properly");
+        throw new Error("EXPO_PUBLIC_GEMINI_API_KEY not found");
       }
+
+      console.log("Initializing GoogleGenAI with API key:", apiKey.substring(0, 10) + "...");
 
       // Try to import GoogleGenAI dynamically
       const { GoogleGenAI } = require("@google/genai");
@@ -65,18 +69,26 @@ export class GeminiService {
           thinkingConfig: {
             thinkingBudget: 0, // Disables thinking
           },
+          response_mime_type: "application/json",
         },
       });
 
       const text = response.text || "";
+      console.log("Gemini API raw response:", text);
 
       // JSON 응답 파싱
-      const jsonMatch = text.match(/\{[\s\S]*\}/);
-      if (!jsonMatch) {
-        throw new Error("Invalid JSON response from Gemini");
+      let interpretation;
+      try {
+        // 먼저 직접 파싱 시도
+        interpretation = JSON.parse(text);
+      } catch (e) {
+        // 실패하면 정규식으로 JSON 추출 시도
+        const jsonMatch = text.match(/\{[\s\S]*\}/);
+        if (!jsonMatch) {
+          throw new Error("Invalid JSON response from Gemini");
+        }
+        interpretation = JSON.parse(jsonMatch[0]);
       }
-
-      const interpretation = JSON.parse(jsonMatch[0]);
 
       // 데이터 검증 및 기본값 설정
       return {
