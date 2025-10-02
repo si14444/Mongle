@@ -3,10 +3,12 @@ import React from "react";
 import { Platform, StyleSheet, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
+import { AdBanner } from "@/components/ads/ad-banner";
 import { HapticTab } from "@/components/haptic-tab";
 import { IconSymbol } from "@/components/ui/icon-symbol";
 import { Colors } from "@/constants/theme";
 import { useColorScheme } from "@/hooks/use-color-scheme";
+import { BannerAdSize } from "react-native-google-mobile-ads";
 
 export default function TabLayout() {
   const colorScheme = useColorScheme();
@@ -72,9 +74,9 @@ export default function TabLayout() {
       </Tabs>
 
       {/* 광고 배너 - 탭 바 바로 위에 고정 */}
-      {/* <View style={[styles.adContainer, { bottom: 65 + insets.bottom }]}>
+      <View style={[styles.adContainer, { bottom: 65 + insets.bottom }]}>
         <AdBanner size={BannerAdSize.BANNER} />
-      </View> */}
+      </View>
     </View>
   );
 }
