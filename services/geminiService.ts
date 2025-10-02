@@ -39,55 +39,98 @@ export class GeminiService {
 꿈 제목: ${dreamTitle}
 꿈 내용: ${dreamContent}
 
-다음 형식으로 JSON 응답을 제공해주세요:
+**중요: 반드시 다음 JSON 형식으로만 응답해주세요. 다른 설명 없이 오직 JSON만 출력하세요:**
+
 {
-  "analysis": "꿈에 대한 전반적인 해석 (200-300자)",
+  "analysis": "꿈에 대한 전반적인 해석 (200-300자, 한국어)",
   "symbols": [
     {
-      "symbol": "꿈에 나타난 상징",
+      "symbol": "상징 이름",
       "meaning": "상징의 의미",
-      "significance": "high" | "medium" | "low"
+      "significance": "high"
     }
   ],
-  "mood": "positive" | "negative" | "neutral",
-  "themes": ["주요 테마1", "주요 테마2", "주요 테마3"]
+  "mood": "positive",
+  "themes": ["테마1", "테마2"]
 }
 
 규칙:
-1. analysis는 따뜻하고 공감적인 톤으로 작성
-2. symbols는 최대 4개까지, 꿈에 실제로 나타난 상징만 포함
-3. mood는 꿈의 전반적인 감정적 분위기 판단
-4. themes는 최대 3개까지, 꿈이 다루는 주요 주제들
-5. 모든 텍스트는 한국어로 작성
-6. JSON 형식을 정확히 지켜주세요
+1. 꿈 내용이 불충분해도 최선을 다해 해석하고 위 JSON 형식으로 응답
+2. analysis는 따뜻하고 공감적인 톤으로 작성 (한국어)
+3. symbols는 최대 4개까지, 꿈에서 추출 가능한 상징 포함
+4. mood는 "positive", "negative", "neutral" 중 하나만 사용
+5. themes는 최대 3개까지
+6. 반드시 유효한 JSON만 출력하고 다른 텍스트는 포함하지 마세요
 `;
 
-      const response = await ai.models.generateContent({
+      const response = await ai.models.generate({
         model: "gemini-2.0-flash-lite",
-        contents: prompt,
-        config: {
-          thinkingConfig: {
-            thinkingBudget: 0, // Disables thinking
+        contents: [
+          {
+            role: "user",
+            parts: [{ text: prompt }],
           },
-          response_mime_type: "application/json",
+        ],
+        generationConfig: {
+          temperature: 0.7,
+          responseMimeType: "application/json",
         },
       });
 
-      const text = response.text || "";
-      console.log("Gemini API raw response:", text);
+      // 응답 구조 확인
+      console.log("Gemini API response candidates:", response.candidates?.length);
+
+      // 응답에서 텍스트 추출
+      let text = "";
+      if (response.candidates && response.candidates.length > 0) {
+        const candidate = response.candidates[0];
+        if (candidate.content && candidate.content.parts && candidate.content.parts.length > 0) {
+          text = candidate.content.parts[0].text || "";
+        }
+      }
+
+      if (!text) {
+        console.error("Unable to extract text from Gemini response");
+        console.log("Full response:", JSON.stringify(response, null, 2));
+        return this.getFallbackInterpretation(dreamTitle, dreamContent);
+      }
+
+      console.log("Gemini API raw response text:", text);
+
+      // 응답이 비어있는지 확인
+      if (!text || text.trim().length === 0) {
+        console.warn("Empty response from Gemini API, using fallback");
+        return this.getFallbackInterpretation(dreamTitle, dreamContent);
+      }
 
       // JSON 응답 파싱
       let interpretation;
       try {
         // 먼저 직접 파싱 시도
         interpretation = JSON.parse(text);
+        console.log("Successfully parsed JSON directly:", interpretation);
       } catch (e) {
+        console.log("Direct JSON parsing failed, trying regex extraction. Error:", e);
+
         // 실패하면 정규식으로 JSON 추출 시도
         const jsonMatch = text.match(/\{[\s\S]*\}/);
         if (!jsonMatch) {
-          throw new Error("Invalid JSON response from Gemini");
+          console.error("No JSON object found in response. Response text:", text);
+          console.log("Using fallback interpretation due to non-JSON response");
+          // JSON이 없으면 fallback 사용
+          return this.getFallbackInterpretation(dreamTitle, dreamContent);
         }
-        interpretation = JSON.parse(jsonMatch[0]);
+
+        try {
+          interpretation = JSON.parse(jsonMatch[0]);
+          console.log("Successfully parsed JSON with regex:", interpretation);
+        } catch (parseError) {
+          console.error("Failed to parse extracted JSON:", parseError);
+          console.error("Extracted text:", jsonMatch[0]);
+          console.log("Using fallback interpretation due to JSON parse error");
+          // 파싱 실패하면 fallback 사용
+          return this.getFallbackInterpretation(dreamTitle, dreamContent);
+        }
       }
 
       // 데이터 검증 및 기본값 설정

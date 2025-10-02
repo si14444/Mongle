@@ -1,14 +1,12 @@
-import { Tabs } from 'expo-router';
-import React from 'react';
-import { View, StyleSheet } from 'react-native';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { Tabs } from "expo-router";
+import React from "react";
+import { StyleSheet, View } from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 
-import { HapticTab } from '@/components/haptic-tab';
-import { IconSymbol } from '@/components/ui/icon-symbol';
-import { AdBanner } from '@/components/ads/ad-banner';
-import { BannerAdSize } from 'react-native-google-mobile-ads';
-import { Colors } from '@/constants/theme';
-import { useColorScheme } from '@/hooks/use-color-scheme';
+import { HapticTab } from "@/components/haptic-tab";
+import { IconSymbol } from "@/components/ui/icon-symbol";
+import { Colors } from "@/constants/theme";
+import { useColorScheme } from "@/hooks/use-color-scheme";
 
 export default function TabLayout() {
   const colorScheme = useColorScheme();
@@ -18,62 +16,71 @@ export default function TabLayout() {
     <View style={{ flex: 1 }}>
       <Tabs
         screenOptions={{
-          tabBarActiveTintColor: Colors[colorScheme ?? 'light'].tint,
+          tabBarActiveTintColor: Colors[colorScheme ?? "light"].tint,
           headerShown: false,
           tabBarButton: HapticTab,
           tabBarStyle: {
-            position: 'absolute',
+            position: "absolute",
             bottom: insets.bottom,
             left: 0,
             right: 0,
-            backgroundColor: Colors[colorScheme ?? 'light'].background,
+            backgroundColor: Colors[colorScheme ?? "light"].background,
             borderTopWidth: 1,
-            borderTopColor: Colors[colorScheme ?? 'light'].border,
+            borderTopColor: Colors[colorScheme ?? "light"].border,
             height: 65,
             paddingTop: 8,
           },
-        }}>
+        }}
+      >
         <Tabs.Screen
           name="index"
           options={{
-            title: '홈',
-            tabBarIcon: ({ color }) => <IconSymbol size={28} name="house.fill" color={color} />,
+            title: "홈",
+            tabBarIcon: ({ color }) => (
+              <IconSymbol size={28} name="house.fill" color={color} />
+            ),
           }}
         />
         <Tabs.Screen
           name="record"
           options={{
-            title: '기록',
-            tabBarIcon: ({ color }) => <IconSymbol size={28} name="pencil" color={color} />,
+            title: "기록",
+            tabBarIcon: ({ color }) => (
+              <IconSymbol size={28} name="pencil" color={color} />
+            ),
           }}
         />
         <Tabs.Screen
           name="interpret"
           options={{
-            title: '해석',
-            tabBarIcon: ({ color }) => <IconSymbol size={28} name="lightbulb" color={color} />,
+            title: "해석",
+            tabBarIcon: ({ color }) => (
+              <IconSymbol size={28} name="lightbulb" color={color} />
+            ),
           }}
         />
         <Tabs.Screen
           name="timeline"
           options={{
-            title: '타임라인',
-            tabBarIcon: ({ color }) => <IconSymbol size={28} name="clock" color={color} />,
+            title: "타임라인",
+            tabBarIcon: ({ color }) => (
+              <IconSymbol size={28} name="clock" color={color} />
+            ),
           }}
         />
       </Tabs>
 
       {/* 광고 배너 - 탭 바 바로 위에 고정 */}
-      <View style={[styles.adContainer, { bottom: 65 + insets.bottom }]}>
+      {/* <View style={[styles.adContainer, { bottom: 65 + insets.bottom }]}>
         <AdBanner size={BannerAdSize.BANNER} />
-      </View>
+      </View> */}
     </View>
   );
 }
 
 const styles = StyleSheet.create({
   adContainer: {
-    position: 'absolute',
+    position: "absolute",
     left: 0,
     right: 0,
     zIndex: 1000,

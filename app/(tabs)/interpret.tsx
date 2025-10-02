@@ -938,7 +938,7 @@ const styles = StyleSheet.create({
   },
   modalContent: {
     flex: 1,
-    paddingTop: 0,
+    paddingTop: 20,
   },
   modalHeader: {
     flexDirection: "row",
@@ -968,6 +968,7 @@ const styles = StyleSheet.create({
   modalScrollView: {
     flex: 1,
     paddingHorizontal: 24,
+    paddingVertical: 16,
   },
   modalInterpretationHeader: {
     flexDirection: "row",
