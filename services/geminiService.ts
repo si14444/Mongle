@@ -145,7 +145,21 @@ export class GeminiService {
     } catch (error) {
       console.error("Failed to interpret dream with Gemini:", error);
 
-      // 오류 발생 시 기본 해석 반환
+      // 심각한 에러인지 확인
+      const errorMessage = error instanceof Error ? error.message : String(error);
+      const isCriticalError =
+        errorMessage.includes("API key") ||
+        errorMessage.includes("Network") ||
+        errorMessage.includes("Failed to fetch") ||
+        errorMessage.includes("AI service not available");
+
+      if (isCriticalError) {
+        // 심각한 에러는 throw하여 UI에서 처리
+        throw error;
+      }
+
+      // 일반적인 파싱 오류 등은 fallback 해석 반환
+      console.log("Using fallback interpretation due to error:", errorMessage);
       return this.getFallbackInterpretation(dreamTitle, dreamContent);
     }
   }

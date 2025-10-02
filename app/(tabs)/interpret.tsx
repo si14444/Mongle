@@ -42,6 +42,7 @@ export default function InterpretScreen() {
   const [showInterpretationModal, setShowInterpretationModal] = useState(false);
   const [showDreamDetailModal, setShowDreamDetailModal] = useState(false);
   const [showErrorModal, setShowErrorModal] = useState(false);
+  const [errorMessage, setErrorMessage] = useState("");
   const [showAlreadyInterpretedModal, setShowAlreadyInterpretedModal] =
     useState(false);
   const [showAdPromptModal, setShowAdPromptModal] = useState(false);
@@ -149,12 +150,30 @@ export default function InterpretScreen() {
           },
           onError: (error) => {
             console.error("Failed to save interpretation:", error);
+            const message = error instanceof Error ? error.message : "알 수 없는 오류가 발생했습니다.";
+            setErrorMessage(`해석 저장 실패: ${message}`);
             setShowErrorModal(true);
           },
         }
       );
     } catch (error) {
       console.error("Failed to interpret dream:", error);
+
+      // 에러 메시지 설정
+      let message = "알 수 없는 오류가 발생했습니다.";
+      if (error instanceof Error) {
+        if (error.message.includes("API key")) {
+          message = "AI 서비스 인증에 실패했습니다. 앱을 다시 시작해주세요.";
+        } else if (error.message.includes("Network") || error.message.includes("Failed to fetch")) {
+          message = "네트워크 연결을 확인해주세요.";
+        } else if (error.message.includes("AI service not available")) {
+          message = "AI 해석 서비스를 사용할 수 없습니다. 나중에 다시 시도해주세요.";
+        } else {
+          message = error.message;
+        }
+      }
+
+      setErrorMessage(message);
       setShowErrorModal(true);
     } finally {
       setIsLoading(false);
@@ -621,9 +640,12 @@ export default function InterpretScreen() {
         {/* Error Modal */}
         <CustomModal
           visible={showErrorModal}
-          onClose={() => setShowErrorModal(false)}
+          onClose={() => {
+            setShowErrorModal(false);
+            setErrorMessage("");
+          }}
           title="오류"
-          message="꿈 해석 중 오류가 발생했습니다."
+          message={errorMessage || "꿈 해석 중 오류가 발생했습니다."}
           type="error"
         />
 
