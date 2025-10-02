@@ -1,6 +1,6 @@
 import { Tabs } from "expo-router";
 import React from "react";
-import { StyleSheet, View } from "react-native";
+import { Platform, StyleSheet, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { HapticTab } from "@/components/haptic-tab";
@@ -21,14 +21,15 @@ export default function TabLayout() {
           tabBarButton: HapticTab,
           tabBarStyle: {
             position: "absolute",
-            bottom: insets.bottom,
+            bottom: Platform.OS === "android" ? 0 : insets.bottom,
             left: 0,
             right: 0,
             backgroundColor: Colors[colorScheme ?? "light"].background,
             borderTopWidth: 1,
             borderTopColor: Colors[colorScheme ?? "light"].border,
-            height: 65,
+            height: Platform.OS === "android" ? 65 + insets.bottom : 65,
             paddingTop: 8,
+            paddingBottom: Platform.OS === "android" ? insets.bottom : 0,
           },
         }}
       >
