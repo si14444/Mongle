@@ -146,7 +146,7 @@ export default function TimelineScreen() {
                     backgroundColor:
                       selectedFilter === filter.key
                         ? colors.primary
-                        : "transparent",
+                        : "#FFFFFF",
                     borderColor: colors.border,
                   },
                 ]}

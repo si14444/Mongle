@@ -252,7 +252,7 @@ export default function RecordScreen() {
                         backgroundColor:
                           selectedEmotion === emotion.key
                             ? emotion.color
-                            : "transparent",
+                            : "#FFFFFF",
                         borderColor:
                           selectedEmotion === emotion.key
                             ? emotion.color
@@ -528,7 +528,7 @@ const styles = StyleSheet.create({
   saveButtonContainer: {
     padding: 20,
     paddingBottom: 40,
-    backgroundColor: "transparent",
+    backgroundColor: "#FFFFFF",
   },
   saveButton: {
     borderRadius: 20,

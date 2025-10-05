@@ -853,7 +853,7 @@ const styles = StyleSheet.create({
     justifyContent: "space-between",
     alignItems: "center",
     marginBottom: 8,
-    backgroundColor: "transparent",
+    backgroundColor: "#FFFFFF",
   },
   interpretedBadge: {
     paddingHorizontal: 8,
@@ -1123,7 +1123,7 @@ const styles = StyleSheet.create({
   },
   adPromptCancelButton: {
     borderWidth: 2,
-    backgroundColor: "transparent",
+    backgroundColor: "#FFFFFF",
   },
   adPromptConfirmButton: {
     shadowColor: "#000",

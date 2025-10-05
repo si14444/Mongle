@@ -55,7 +55,7 @@ export default function HomeScreen() {
               colors={[
                 colors.primary + "20",
                 colors.accent + "10",
-                "transparent",
+                "#FFFFFF",
               ]}
               style={styles.headerGradient}
               start={{ x: 0, y: 0 }}
