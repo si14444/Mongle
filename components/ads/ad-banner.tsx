@@ -1,19 +1,37 @@
 import React, { useEffect, useState } from 'react';
 import { View, Platform, StyleSheet } from 'react-native';
-import { BannerAd, BannerAdSize, TestIds, useForeground } from 'react-native-google-mobile-ads';
 import Constants from 'expo-constants';
 import { Colors } from '@/constants/theme';
 import { useColorScheme } from '@/hooks/use-color-scheme';
 
+// Web에서는 광고 라이브러리 import 안 함
+let BannerAd: any;
+let BannerAdSize: any;
+let TestIds: any;
+let useForeground: any;
+
+if (Platform.OS !== 'web') {
+  const mobileAds = require('react-native-google-mobile-ads');
+  BannerAd = mobileAds.BannerAd;
+  BannerAdSize = mobileAds.BannerAdSize;
+  TestIds = mobileAds.TestIds;
+  useForeground = mobileAds.useForeground;
+}
+
 interface AdBannerProps {
-  size?: BannerAdSize;
+  size?: any;
   style?: any;
 }
 
-export function AdBanner({ size = BannerAdSize.BANNER, style }: AdBannerProps) {
+export function AdBanner({ size, style }: AdBannerProps) {
   const [adUnitId, setAdUnitId] = useState<string>('');
   const colorScheme = useColorScheme();
   const colors = Colors[colorScheme ?? 'light'];
+
+  // Web에서는 광고 표시 안 함
+  if (Platform.OS === 'web') {
+    return null;
+  }
 
   // 앱이 포그라운드로 돌아올 때 광고 새로고침
   useForeground(() => {
@@ -25,7 +43,7 @@ export function AdBanner({ size = BannerAdSize.BANNER, style }: AdBannerProps) {
     const getAdUnitId = () => {
       if (__DEV__) {
         // 개발 모드에서는 테스트 광고 사용
-        return TestIds.BANNER;
+        return TestIds?.BANNER || '';
       }
 
       // 프로덕션에서는 실제 광고 ID 사용
@@ -51,6 +69,8 @@ export function AdBanner({ size = BannerAdSize.BANNER, style }: AdBannerProps) {
     return null;
   }
 
+  const bannerSize = size || (BannerAdSize?.BANNER || 'BANNER');
+
   return (
     <View style={[styles.container, {
       backgroundColor: colors.background,
@@ -58,7 +78,7 @@ export function AdBanner({ size = BannerAdSize.BANNER, style }: AdBannerProps) {
     }, style]}>
       <BannerAd
         unitId={adUnitId}
-        size={size}
+        size={bannerSize}
         requestOptions={{
           requestNonPersonalizedAdsOnly: false,
         }}

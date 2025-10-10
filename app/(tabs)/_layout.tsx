@@ -8,7 +8,6 @@ import { HapticTab } from "@/components/haptic-tab";
 import { IconSymbol } from "@/components/ui/icon-symbol";
 import { Colors } from "@/constants/theme";
 import { useColorScheme } from "@/hooks/use-color-scheme";
-import { BannerAdSize } from "react-native-google-mobile-ads";
 
 export default function TabLayout() {
   const colorScheme = useColorScheme();
@@ -75,7 +74,7 @@ export default function TabLayout() {
 
       {/* 광고 배너 - 탭 바 바로 위에 고정 */}
       <View style={[styles.adContainer, { bottom: 65 + insets.bottom }]}>
-        <AdBanner size={BannerAdSize.BANNER} />
+        <AdBanner />
       </View>
     </View>
   );

@@ -1,7 +1,6 @@
 import { AdBanner } from "@/components/ads/ad-banner";
 import React, { ReactNode } from "react";
 import { StyleSheet, View } from "react-native";
-import { BannerAdSize } from "react-native-google-mobile-ads";
 
 interface TabLayoutWithAdProps {
   children: ReactNode;
@@ -14,7 +13,7 @@ export function TabLayoutWithAd({ children }: TabLayoutWithAdProps) {
       <View style={styles.content}>{children}</View>
 
       {/* 광고 배너 - 탭 바로 위에 배치 */}
-      <AdBanner size={BannerAdSize.BANNER} />
+      <AdBanner />
     </View>
   );
 }

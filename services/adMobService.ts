@@ -1,19 +1,37 @@
 import { Platform } from 'react-native';
 import Constants from 'expo-constants';
-import mobileAds, {
-  MaxAdContentRating,
-  AdsConsent,
-  AdsConsentStatus,
-  RewardedAd,
-  RewardedAdEventType,
-  AdEventType
-} from 'react-native-google-mobile-ads';
+
+// Web에서는 광고 라이브러리 import 안 함
+let mobileAds: any;
+let MaxAdContentRating: any;
+let AdsConsent: any;
+let AdsConsentStatus: any;
+let RewardedAd: any;
+let RewardedAdEventType: any;
+let AdEventType: any;
+
+if (Platform.OS !== 'web') {
+  const googleMobileAds = require('react-native-google-mobile-ads');
+  mobileAds = googleMobileAds.default;
+  MaxAdContentRating = googleMobileAds.MaxAdContentRating;
+  AdsConsent = googleMobileAds.AdsConsent;
+  AdsConsentStatus = googleMobileAds.AdsConsentStatus;
+  RewardedAd = googleMobileAds.RewardedAd;
+  RewardedAdEventType = googleMobileAds.RewardedAdEventType;
+  AdEventType = googleMobileAds.AdEventType;
+}
 
 export class AdMobService {
   private static initialized = false;
-  private static rewardedAd: RewardedAd | null = null;
+  private static rewardedAd: any = null;
 
   static async initialize(): Promise<void> {
+    // Web에서는 광고 초기화 안 함
+    if (Platform.OS === 'web') {
+      this.initialized = true;
+      return;
+    }
+
     if (this.initialized) {
       return;
     }
@@ -87,6 +105,11 @@ export class AdMobService {
    * 보상형 광고 로드
    */
   static async loadRewardedAd(): Promise<void> {
+    // Web에서는 광고 로드 안 함
+    if (Platform.OS === 'web') {
+      return Promise.resolve();
+    }
+
     const adUnitId = this.getAdUnitId('reward');
 
     if (!adUnitId) {
@@ -114,7 +137,7 @@ export class AdMobService {
 
       const errorListener = this.rewardedAd.addAdEventListener(
         AdEventType.ERROR,
-        (error) => {
+        (error: any) => {
           console.error('Rewarded ad failed to load:', error);
           errorListener();
           reject(error);
@@ -130,6 +153,11 @@ export class AdMobService {
    * @returns Promise<boolean> - 광고를 끝까지 시청했는지 여부
    */
   static async showRewardedAd(): Promise<boolean> {
+    // Web에서는 광고 표시 안 함
+    if (Platform.OS === 'web') {
+      return Promise.resolve(false);
+    }
+
     if (!this.rewardedAd) {
       throw new Error('Rewarded ad not loaded. Call loadRewardedAd() first.');
     }
@@ -144,7 +172,7 @@ export class AdMobService {
 
       const earnedListener = this.rewardedAd.addAdEventListener(
         RewardedAdEventType.EARNED_REWARD,
-        (reward) => {
+        (reward: any) => {
           console.log('User earned reward:', reward);
           earned = true;
         }
