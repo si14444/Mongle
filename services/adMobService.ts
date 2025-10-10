@@ -1,4 +1,5 @@
 import { Platform } from 'react-native';
+import Constants from 'expo-constants';
 import mobileAds, {
   MaxAdContentRating,
   AdsConsent,
@@ -73,12 +74,12 @@ export class AdMobService {
     // 프로덕션에서는 실제 광고 ID 사용
     if (Platform.OS === 'ios') {
       return adType === 'banner'
-        ? process.env.EXPO_PUBLIC_ADMOB_IOS_BANNER_ID || ''
-        : process.env.EXPO_PUBLIC_ADMOB_IOS_REWARD_ID || '';
+        ? Constants.expoConfig?.extra?.EXPO_PUBLIC_ADMOB_IOS_BANNER_ID || 'ca-app-pub-4535163023491412/8716780882'
+        : Constants.expoConfig?.extra?.EXPO_PUBLIC_ADMOB_IOS_REWARD_ID || 'ca-app-pub-4535163023491412/8720101579';
     } else {
       return adType === 'banner'
-        ? process.env.EXPO_PUBLIC_ADMOB_ANDROID_BANNER_ID || ''
-        : process.env.EXPO_PUBLIC_ADMOB_ANDROID_REWARD_ID || '';
+        ? Constants.expoConfig?.extra?.EXPO_PUBLIC_ADMOB_ANDROID_BANNER_ID || 'ca-app-pub-4535163023491412/3744205510'
+        : Constants.expoConfig?.extra?.EXPO_PUBLIC_ADMOB_ANDROID_REWARD_ID || 'ca-app-pub-4535163023491412/6331389147';
     }
   }
 
