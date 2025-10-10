@@ -2,7 +2,7 @@
   "expo": {
     "name": "꿈틀",
     "slug": "Mongle",
-    "version": "1.0.1",
+    "version": "1.0.2",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
     "scheme": "dreamtle",
@@ -80,7 +80,10 @@
       "policy": "appVersion"
     },
     "updates": {
-      "url": "https://u.expo.dev/8dee4572-ba69-4102-947e-9d8268d3a7a8"
+      "url": "https://u.expo.dev/8dee4572-ba69-4102-947e-9d8268d3a7a8",
+      "fallbackToCacheTimeout": 0,
+      "checkAutomatically": "ON_LOAD",
+      "enabled": true
     }
   }
 }
