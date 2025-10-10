@@ -8,7 +8,8 @@
       "Bash(npm uninstall:*)",
       "Bash(pkill:*)",
       "Bash(cat:*)",
-      "Bash(npx:*)"
+      "Bash(npx:*)",
+      "Bash(git log:*)"
     ],
     "deny": [],
     "ask": []
