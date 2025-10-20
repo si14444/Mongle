@@ -82,23 +82,32 @@ export class AdMobService {
   }
 
   static getAdUnitId(adType: 'banner' | 'reward'): string {
-    if (__DEV__) {
-      // 개발 모드에서는 테스트 광고 ID 사용
-      return adType === 'banner'
-        ? 'ca-app-pub-3940256099942544/6300978111' // 테스트 배너 ID
-        : 'ca-app-pub-3940256099942544/5224354917'; // 테스트 보상형 광고 ID
+    // 개발/TestFlight에서는 테스트 광고 ID 사용 (실제 광고 단위 형식 문제 회피)
+    // 프로덕션 릴리즈 시에만 실제 광고 ID 사용
+    const useTestAds = __DEV__ || !Constants.appOwnership || Constants.appOwnership === 'expo';
+
+    if (useTestAds) {
+      const testAdUnitId = adType === 'banner'
+        ? 'ca-app-pub-3940256099942544/6300978111' // Google 테스트 배너 ID
+        : 'ca-app-pub-3940256099942544/5224354917'; // Google 테스트 보상형 광고 ID
+
+      console.log(`[AdMob] Using TEST ad unit ID for ${adType}:`, testAdUnitId);
+      return testAdUnitId;
     }
 
-    // 프로덕션에서는 실제 광고 ID 사용
-    if (Platform.OS === 'ios') {
-      return adType === 'banner'
-        ? Constants.expoConfig?.extra?.EXPO_PUBLIC_ADMOB_IOS_BANNER_ID || 'ca-app-pub-4535163023491412/8716780882'
-        : Constants.expoConfig?.extra?.EXPO_PUBLIC_ADMOB_IOS_REWARD_ID || 'ca-app-pub-4535163023491412/8720101579';
-    } else {
-      return adType === 'banner'
-        ? Constants.expoConfig?.extra?.EXPO_PUBLIC_ADMOB_ANDROID_BANNER_ID || 'ca-app-pub-4535163023491412/3744205510'
-        : Constants.expoConfig?.extra?.EXPO_PUBLIC_ADMOB_ANDROID_REWARD_ID || 'ca-app-pub-4535163023491412/6331389147';
-    }
+    // 프로덕션 광고 ID
+    const adUnitId = Platform.OS === 'ios'
+      ? (adType === 'banner'
+          ? Constants.expoConfig?.extra?.EXPO_PUBLIC_ADMOB_IOS_BANNER_ID || 'ca-app-pub-4535163023491412/8716780882'
+          : Constants.expoConfig?.extra?.EXPO_PUBLIC_ADMOB_IOS_REWARD_ID || 'ca-app-pub-4535163023491412/8720101579')
+      : (adType === 'banner'
+          ? Constants.expoConfig?.extra?.EXPO_PUBLIC_ADMOB_ANDROID_BANNER_ID || 'ca-app-pub-4535163023491412/3744205510'
+          : Constants.expoConfig?.extra?.EXPO_PUBLIC_ADMOB_ANDROID_REWARD_ID || 'ca-app-pub-4535163023491412/6331389147');
+
+    console.log(`[AdMob] Getting ${adType} ad unit ID for ${Platform.OS}:`, adUnitId);
+    console.log(`[AdMob] Production mode, appOwnership:`, Constants.appOwnership);
+
+    return adUnitId;
   }
 
   /**
@@ -107,29 +116,36 @@ export class AdMobService {
   static async loadRewardedAd(): Promise<void> {
     // Web에서는 광고 로드 안 함
     if (Platform.OS === 'web') {
+      console.log('[AdMob] Skipping ad load on web platform');
       return Promise.resolve();
     }
 
     const adUnitId = this.getAdUnitId('reward');
+    console.log('[AdMob] Loading rewarded ad with unit ID:', adUnitId);
 
     if (!adUnitId) {
-      throw new Error('Rewarded ad unit ID not configured');
+      const error = new Error('Rewarded ad unit ID not configured');
+      console.error('[AdMob]', error.message);
+      throw error;
     }
 
+    console.log('[AdMob] Creating RewardedAd instance');
     this.rewardedAd = RewardedAd.createForAdRequest(adUnitId, {
       requestNonPersonalizedAdsOnly: false,
     });
 
     return new Promise((resolve, reject) => {
       if (!this.rewardedAd) {
-        reject(new Error('Failed to create rewarded ad'));
+        const error = new Error('Failed to create rewarded ad');
+        console.error('[AdMob]', error.message);
+        reject(error);
         return;
       }
 
       const loadedListener = this.rewardedAd.addAdEventListener(
         RewardedAdEventType.LOADED,
         () => {
-          console.log('Rewarded ad loaded');
+          console.log('[AdMob] ✅ Rewarded ad loaded successfully');
           loadedListener();
           resolve();
         }
@@ -138,12 +154,13 @@ export class AdMobService {
       const errorListener = this.rewardedAd.addAdEventListener(
         AdEventType.ERROR,
         (error: any) => {
-          console.error('Rewarded ad failed to load:', error);
+          console.error('[AdMob] ❌ Rewarded ad failed to load:', JSON.stringify(error, null, 2));
           errorListener();
           reject(error);
         }
       );
 
+      console.log('[AdMob] Starting ad load request...');
       this.rewardedAd.load();
     });
   }
@@ -155,16 +172,23 @@ export class AdMobService {
   static async showRewardedAd(): Promise<boolean> {
     // Web에서는 광고 표시 안 함
     if (Platform.OS === 'web') {
+      console.log('[AdMob] Skipping ad show on web platform');
       return Promise.resolve(false);
     }
 
     if (!this.rewardedAd) {
-      throw new Error('Rewarded ad not loaded. Call loadRewardedAd() first.');
+      const error = new Error('Rewarded ad not loaded. Call loadRewardedAd() first.');
+      console.error('[AdMob]', error.message);
+      throw error;
     }
+
+    console.log('[AdMob] Showing rewarded ad');
 
     return new Promise((resolve, reject) => {
       if (!this.rewardedAd) {
-        reject(new Error('Rewarded ad not available'));
+        const error = new Error('Rewarded ad not available');
+        console.error('[AdMob]', error.message);
+        reject(error);
         return;
       }
 
@@ -173,7 +197,7 @@ export class AdMobService {
       const earnedListener = this.rewardedAd.addAdEventListener(
         RewardedAdEventType.EARNED_REWARD,
         (reward: any) => {
-          console.log('User earned reward:', reward);
+          console.log('[AdMob] 🎁 User earned reward:', JSON.stringify(reward, null, 2));
           earned = true;
         }
       );
@@ -181,7 +205,7 @@ export class AdMobService {
       const closedListener = this.rewardedAd.addAdEventListener(
         AdEventType.CLOSED,
         () => {
-          console.log('Rewarded ad closed, earned:', earned);
+          console.log('[AdMob] Rewarded ad closed, earned:', earned);
           earnedListener();
           closedListener();
           this.rewardedAd = null; // 광고 인스턴스 초기화
@@ -189,6 +213,7 @@ export class AdMobService {
         }
       );
 
+      console.log('[AdMob] Calling show() on rewarded ad');
       this.rewardedAd.show();
     });
   }

@@ -1,0 +1,92 @@
+export default ({ config }) => {
+  return {
+    ...config,
+    name: "꿈틀",
+    slug: "Mongle",
+    version: "1.0.3",
+    orientation: "portrait",
+    icon: "./assets/images/icon.png",
+    scheme: "dreamtle",
+    userInterfaceStyle: "automatic",
+    newArchEnabled: true,
+    ios: {
+      supportsTablet: false,
+      bundleIdentifier: "com.si14444.DreamTle",
+      infoPlist: {
+        ITSAppUsesNonExemptEncryption: false
+      }
+    },
+    android: {
+      adaptiveIcon: {
+        backgroundColor: "#E6F4FE",
+        foregroundImage: "./assets/images/android-icon-foreground.png",
+        backgroundImage: "./assets/images/android-icon-background.png",
+        monochromeImage: "./assets/images/android-icon-monochrome.png"
+      },
+      edgeToEdgeEnabled: true,
+      predictiveBackGestureEnabled: false,
+      package: "com.si14444.DreamTle"
+    },
+    web: {
+      output: "static",
+      favicon: "./assets/images/favicon.png"
+    },
+    plugins: [
+      "expo-router",
+      [
+        "expo-splash-screen",
+        {
+          image: "./assets/images/splash-icon.png",
+          imageWidth: 200,
+          resizeMode: "contain",
+          backgroundColor: "#ffffff",
+          dark: {
+            backgroundColor: "#000000"
+          }
+        }
+      ],
+      [
+        "react-native-google-mobile-ads",
+        {
+          androidAppId: "ca-app-pub-4535163023491412~1761588747",
+          iosAppId: "ca-app-pub-4535163023491412~1277274569"
+        }
+      ],
+      [
+        "expo-build-properties",
+        {
+          ios: {
+            useFrameworks: "static"
+          }
+        }
+      ],
+      "expo-web-browser"
+    ],
+    experiments: {
+      typedRoutes: true,
+      reactCompiler: true
+    },
+    extra: {
+      router: {},
+      // EAS Build에서는 Expo Secrets의 환경변수를 주입
+      // 로컬 개발에서는 .env 파일의 값을 사용
+      EXPO_PUBLIC_GEMINI_API_KEY: process.env.EXPO_PUBLIC_GEMINI_API_KEY,
+      EXPO_PUBLIC_ADMOB_IOS_BANNER_ID: process.env.EXPO_PUBLIC_ADMOB_IOS_BANNER_ID,
+      EXPO_PUBLIC_ADMOB_IOS_REWARD_ID: process.env.EXPO_PUBLIC_ADMOB_IOS_REWARD_ID,
+      EXPO_PUBLIC_ADMOB_ANDROID_BANNER_ID: process.env.EXPO_PUBLIC_ADMOB_ANDROID_BANNER_ID,
+      EXPO_PUBLIC_ADMOB_ANDROID_REWARD_ID: process.env.EXPO_PUBLIC_ADMOB_ANDROID_REWARD_ID,
+      eas: {
+        projectId: "8dee4572-ba69-4102-947e-9d8268d3a7a8"
+      }
+    },
+    runtimeVersion: {
+      policy: "appVersion"
+    },
+    updates: {
+      url: "https://u.expo.dev/8dee4572-ba69-4102-947e-9d8268d3a7a8",
+      fallbackToCacheTimeout: 0,
+      checkAutomatically: "ON_LOAD",
+      enabled: true
+    }
+  };
+};

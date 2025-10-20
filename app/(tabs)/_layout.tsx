@@ -22,15 +22,15 @@ export default function TabLayout() {
           tabBarButton: HapticTab,
           tabBarStyle: {
             position: "absolute",
-            bottom: Platform.OS === "android" ? 0 : insets.bottom,
+            bottom: 0,
             left: 0,
             right: 0,
             backgroundColor: Colors[colorScheme ?? "light"].background,
             borderTopWidth: 1,
             borderTopColor: Colors[colorScheme ?? "light"].border,
-            height: Platform.OS === "android" ? 65 + insets.bottom : 65,
+            height: Platform.OS === "android" ? 65 + insets.bottom : 65 + insets.bottom,
             paddingTop: 8,
-            paddingBottom: Platform.OS === "android" ? insets.bottom : 0,
+            paddingBottom: insets.bottom,
           },
         }}
       >

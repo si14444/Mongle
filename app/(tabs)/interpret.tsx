@@ -97,22 +97,41 @@ export default function InterpretScreen() {
     setIsLoadingAd(true);
 
     try {
+      console.log('[Interpret] Starting ad flow...');
+
       // 보상형 광고 로드
+      console.log('[Interpret] Loading rewarded ad...');
       await AdMobService.loadRewardedAd();
+      console.log('[Interpret] Ad loaded, now showing...');
 
       // 광고 표시
       const earned = await AdMobService.showRewardedAd();
+      console.log('[Interpret] Ad closed, earned:', earned);
 
       if (earned) {
         // 광고를 끝까지 시청한 경우에만 해석 진행
+        console.log('[Interpret] User earned reward, proceeding with interpretation');
         await performInterpretation();
       } else {
         // 광고를 끝까지 보지 않은 경우
-        console.log("User did not complete watching the ad");
+        console.log('[Interpret] User did not complete watching the ad');
+        setErrorMessage("광고를 끝까지 시청해야 해석을 진행할 수 있습니다.");
+        setShowErrorModal(true);
       }
     } catch (error) {
-      console.error("Failed to show rewarded ad:", error);
-      // 광고 로드/표시 실패 시 그냥 해석 진행 (사용자 경험 개선)
+      console.error('[Interpret] ❌ Failed to show rewarded ad:', error);
+
+      // 에러 메시지 설정
+      let message = "광고를 로드하는 중 오류가 발생했습니다.";
+      if (error instanceof Error) {
+        message = `광고 오류: ${error.message}`;
+      }
+
+      setErrorMessage(message);
+      setShowErrorModal(true);
+
+      // 광고 로드/표시 실패 시 그냥 해석 진행 (임시 조치)
+      console.log('[Interpret] Proceeding with interpretation despite ad failure (temporary measure)');
       await performInterpretation();
     } finally {
       setIsLoadingAd(false);
@@ -362,7 +381,7 @@ export default function InterpretScreen() {
                         ]}
                         onPress={() => handleDreamSelect(dream)}
                       >
-                        <ThemedView style={styles.dreamItemHeader}>
+                        <View style={styles.dreamItemHeader}>
                           <ThemedText
                             type="defaultSemiBold"
                             style={[
@@ -373,7 +392,7 @@ export default function InterpretScreen() {
                             {dream.title}
                           </ThemedText>
                           {dream.interpretation && (
-                            <ThemedView
+                            <View
                               style={[
                                 styles.interpretedBadge,
                                 { backgroundColor: colors.positive },
@@ -387,9 +406,9 @@ export default function InterpretScreen() {
                               >
                                 해석됨
                               </ThemedText>
-                            </ThemedView>
+                            </View>
                           )}
-                        </ThemedView>
+                        </View>
                         <ThemedText
                           style={[
                             styles.dreamItemContent,
@@ -853,7 +872,6 @@ const styles = StyleSheet.create({
     justifyContent: "space-between",
     alignItems: "center",
     marginBottom: 8,
-    backgroundColor: "#FFFFFF",
   },
   interpretedBadge: {
     paddingHorizontal: 8,
@@ -960,7 +978,7 @@ const styles = StyleSheet.create({
   },
   modalContent: {
     flex: 1,
-    paddingTop: 20,
+    paddingTop: 40,
   },
   modalHeader: {
     flexDirection: "row",

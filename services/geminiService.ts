@@ -2,25 +2,17 @@ import { DreamInterpretation, DreamSymbol } from "@/types/dream";
 import Constants from 'expo-constants';
 
 export class GeminiService {
-  private static getAI() {
-    try {
-      // Check if API key is available - use process.env for Expo environment variables
-      const apiKey = process.env.EXPO_PUBLIC_GEMINI_API_KEY || Constants.expoConfig?.extra?.EXPO_PUBLIC_GEMINI_API_KEY;
+  private static getApiKey(): string | null {
+    // EAS Build에서는 Constants.expoConfig.extra를 사용해야 함
+    const apiKey = Constants.expoConfig?.extra?.EXPO_PUBLIC_GEMINI_API_KEY;
 
-      if (!apiKey || apiKey.startsWith('${')) {
-        console.error("EXPO_PUBLIC_GEMINI_API_KEY not found or not loaded properly");
-        throw new Error("EXPO_PUBLIC_GEMINI_API_KEY not found");
-      }
-
-      console.log("Initializing GoogleGenAI with API key:", apiKey.substring(0, 10) + "...");
-
-      // Try to import GoogleGenAI dynamically
-      const { GoogleGenAI } = require("@google/genai");
-      return new GoogleGenAI({ apiKey });
-    } catch (error) {
-      console.warn("Failed to initialize GoogleGenAI:", error);
+    if (!apiKey || apiKey.startsWith('${')) {
+      console.error("[GeminiService] EXPO_PUBLIC_GEMINI_API_KEY not found or not loaded properly");
       return null;
     }
+
+    console.log("[GeminiService] API key found:", apiKey.substring(0, 10) + "...");
+    return apiKey;
   }
 
   static async interpretDream(
@@ -28,13 +20,12 @@ export class GeminiService {
     dreamContent: string
   ): Promise<Omit<DreamInterpretation, "id" | "dreamId" | "createdAt">> {
     try {
-      const ai = this.getAI();
-      if (!ai) {
+      const apiKey = this.getApiKey();
+      if (!apiKey) {
         throw new Error("AI service not available");
       }
 
-      const prompt = `
-당신은 전문 꿈 해석가입니다. 다음 꿈을 분석하고 해석해주세요.
+      const prompt = `당신은 전문 꿈 해석가입니다. 다음 꿈을 분석하고 해석해주세요.
 
 꿈 제목: ${dreamTitle}
 꿈 내용: ${dreamContent}
@@ -60,42 +51,54 @@ export class GeminiService {
 3. symbols는 최대 4개까지, 꿈에서 추출 가능한 상징 포함
 4. mood는 "positive", "negative", "neutral" 중 하나만 사용
 5. themes는 최대 3개까지
-6. 반드시 유효한 JSON만 출력하고 다른 텍스트는 포함하지 마세요
-`;
+6. 반드시 유효한 JSON만 출력하고 다른 텍스트는 포함하지 마세요`;
 
-      const response = await ai.models.generate({
-        model: "gemini-2.0-flash-lite",
-        contents: [
-          {
-            role: "user",
-            parts: [{ text: prompt }],
+      console.log("[GeminiService] Calling Gemini REST API...");
+
+      // Gemini REST API 직접 호출
+      const response = await fetch(
+        `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-exp:generateContent?key=${apiKey}`,
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
           },
-        ],
-        generationConfig: {
-          temperature: 0.7,
-          responseMimeType: "application/json",
-        },
-      });
-
-      // 응답 구조 확인
-      console.log("Gemini API response candidates:", response.candidates?.length);
-
-      // 응답에서 텍스트 추출
-      let text = "";
-      if (response.candidates && response.candidates.length > 0) {
-        const candidate = response.candidates[0];
-        if (candidate.content && candidate.content.parts && candidate.content.parts.length > 0) {
-          text = candidate.content.parts[0].text || "";
+          body: JSON.stringify({
+            contents: [
+              {
+                parts: [
+                  {
+                    text: prompt
+                  }
+                ]
+              }
+            ],
+            generationConfig: {
+              temperature: 0.7,
+              responseMimeType: "application/json",
+            },
+          }),
         }
+      );
+
+      if (!response.ok) {
+        const errorText = await response.text();
+        console.error("[GeminiService] API request failed:", response.status, errorText);
+        throw new Error(`Gemini API error: ${response.status}`);
       }
 
+      const data = await response.json();
+      console.log("[GeminiService] Gemini API response received");
+
+      // 응답에서 텍스트 추출
+      const text = data.candidates?.[0]?.content?.parts?.[0]?.text;
+
       if (!text) {
-        console.error("Unable to extract text from Gemini response");
-        console.log("Full response:", JSON.stringify(response, null, 2));
+        console.error("[GeminiService] Unable to extract text from Gemini response");
         return this.getFallbackInterpretation(dreamTitle, dreamContent);
       }
 
-      console.log("Gemini API raw response text:", text);
+      console.log("[GeminiService] Gemini API raw response text:", text);
 
       // 응답이 비어있는지 확인
       if (!text || text.trim().length === 0) {
