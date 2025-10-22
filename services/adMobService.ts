@@ -1,5 +1,5 @@
-import { Platform } from 'react-native';
-import Constants from 'expo-constants';
+import Constants from "expo-constants";
+import { Platform } from "react-native";
 
 // Web에서는 광고 라이브러리 import 안 함
 let mobileAds: any;
@@ -10,8 +10,8 @@ let RewardedAd: any;
 let RewardedAdEventType: any;
 let AdEventType: any;
 
-if (Platform.OS !== 'web') {
-  const googleMobileAds = require('react-native-google-mobile-ads');
+if (Platform.OS !== "web") {
+  const googleMobileAds = require("react-native-google-mobile-ads");
   mobileAds = googleMobileAds.default;
   MaxAdContentRating = googleMobileAds.MaxAdContentRating;
   AdsConsent = googleMobileAds.AdsConsent;
@@ -27,7 +27,7 @@ export class AdMobService {
 
   static async initialize(): Promise<void> {
     // Web에서는 광고 초기화 안 함
-    if (Platform.OS === 'web') {
+    if (Platform.OS === "web") {
       this.initialized = true;
       return;
     }
@@ -51,7 +51,7 @@ export class AdMobService {
         tagForUnderAgeOfConsent: false,
 
         // 테스트 기기 설정 (개발 시에만)
-        testDeviceIdentifiers: __DEV__ ? ['EMULATOR'] : [],
+        testDeviceIdentifiers: __DEV__ ? ["EMULATOR"] : [],
       });
 
       // GDPR 동의 처리 (유럽 사용자용)
@@ -65,13 +65,15 @@ export class AdMobService {
       } catch (consentError) {
         // GDPR 동의 폼이 설정되지 않았거나 사용할 수 없는 경우 무시
         // 광고는 여전히 작동할 수 있음
-        console.log('AdMob consent form not configured, continuing without GDPR consent');
+        console.log(
+          "AdMob consent form not configured, continuing without GDPR consent"
+        );
       }
 
       this.initialized = true;
-      console.log('AdMob initialized successfully');
+      console.log("AdMob initialized successfully");
     } catch (error) {
-      console.error('Failed to initialize AdMob:', error);
+      console.error("Failed to initialize AdMob:", error);
       // 에러를 throw하지 않고 무시하여 앱 실행 계속
       this.initialized = false;
     }
@@ -81,31 +83,34 @@ export class AdMobService {
     return this.initialized;
   }
 
-  static getAdUnitId(adType: 'banner' | 'reward'): string {
-    // 개발/TestFlight에서는 테스트 광고 ID 사용 (실제 광고 단위 형식 문제 회피)
-    // 프로덕션 릴리즈 시에만 실제 광고 ID 사용
-    const useTestAds = __DEV__ || !Constants.appOwnership || Constants.appOwnership === 'expo';
+  static getAdUnitId(adType: "banner" | "reward"): string {
+    // 개발 모드나 Expo Go에서만 테스트 광고 사용
+    // TestFlight와 프로덕션에서는 실제 광고 ID 사용
+    const useTestAds = __DEV__ || Constants.appOwnership === "expo";
 
     if (useTestAds) {
-      const testAdUnitId = adType === 'banner'
-        ? 'ca-app-pub-3940256099942544/6300978111' // Google 테스트 배너 ID
-        : 'ca-app-pub-3940256099942544/5224354917'; // Google 테스트 보상형 광고 ID
+      const testAdUnitId =
+        adType === "banner"
+          ? "ca-app-pub-3940256099942544/6300978111" // Google 테스트 배너 ID
+          : "ca-app-pub-3940256099942544/5224354917"; // Google 테스트 보상형 광고 ID
 
       console.log(`[AdMob] Using TEST ad unit ID for ${adType}:`, testAdUnitId);
       return testAdUnitId;
     }
 
-    // 프로덕션 광고 ID
-    const adUnitId = Platform.OS === 'ios'
-      ? (adType === 'banner'
-          ? Constants.expoConfig?.extra?.EXPO_PUBLIC_ADMOB_IOS_BANNER_ID || 'ca-app-pub-4535163023491412/8716780882'
-          : Constants.expoConfig?.extra?.EXPO_PUBLIC_ADMOB_IOS_REWARD_ID || 'ca-app-pub-4535163023491412/8720101579')
-      : (adType === 'banner'
-          ? Constants.expoConfig?.extra?.EXPO_PUBLIC_ADMOB_ANDROID_BANNER_ID || 'ca-app-pub-4535163023491412/3744205510'
-          : Constants.expoConfig?.extra?.EXPO_PUBLIC_ADMOB_ANDROID_REWARD_ID || 'ca-app-pub-4535163023491412/6331389147');
-
-    console.log(`[AdMob] Getting ${adType} ad unit ID for ${Platform.OS}:`, adUnitId);
-    console.log(`[AdMob] Production mode, appOwnership:`, Constants.appOwnership);
+    // 프로덕션 광고 ID (TestFlight 포함)
+    const adUnitId =
+      Platform.OS === "ios"
+        ? adType === "banner"
+          ? Constants.expoConfig?.extra?.EXPO_PUBLIC_ADMOB_IOS_BANNER_ID ||
+            "ca-app-pub-4535163023491412/8716780882"
+          : Constants.expoConfig?.extra?.EXPO_PUBLIC_ADMOB_IOS_REWARD_ID ||
+            "ca-app-pub-4535163023491412/8720101579"
+        : adType === "banner"
+          ? Constants.expoConfig?.extra?.EXPO_PUBLIC_ADMOB_ANDROID_BANNER_ID ||
+            "ca-app-pub-4535163023491412/3744205510"
+          : Constants.expoConfig?.extra?.EXPO_PUBLIC_ADMOB_ANDROID_REWARD_ID ||
+            "ca-app-pub-4535163023491412/6331389147";
 
     return adUnitId;
   }
@@ -115,29 +120,27 @@ export class AdMobService {
    */
   static async loadRewardedAd(): Promise<void> {
     // Web에서는 광고 로드 안 함
-    if (Platform.OS === 'web') {
-      console.log('[AdMob] Skipping ad load on web platform');
+    if (Platform.OS === "web") {
+      console.log("[AdMob] Skipping ad load on web platform");
       return Promise.resolve();
     }
 
-    const adUnitId = this.getAdUnitId('reward');
-    console.log('[AdMob] Loading rewarded ad with unit ID:', adUnitId);
+    const adUnitId = this.getAdUnitId("reward");
 
     if (!adUnitId) {
-      const error = new Error('Rewarded ad unit ID not configured');
-      console.error('[AdMob]', error.message);
+      const error = new Error("Rewarded ad unit ID not configured");
+      console.error("[AdMob]", error.message);
       throw error;
     }
 
-    console.log('[AdMob] Creating RewardedAd instance');
     this.rewardedAd = RewardedAd.createForAdRequest(adUnitId, {
       requestNonPersonalizedAdsOnly: false,
     });
 
     return new Promise((resolve, reject) => {
       if (!this.rewardedAd) {
-        const error = new Error('Failed to create rewarded ad');
-        console.error('[AdMob]', error.message);
+        const error = new Error("Failed to create rewarded ad");
+        console.error("[AdMob]", error.message);
         reject(error);
         return;
       }
@@ -145,7 +148,7 @@ export class AdMobService {
       const loadedListener = this.rewardedAd.addAdEventListener(
         RewardedAdEventType.LOADED,
         () => {
-          console.log('[AdMob] ✅ Rewarded ad loaded successfully');
+          console.log("[AdMob] ✅ Rewarded ad loaded successfully");
           loadedListener();
           resolve();
         }
@@ -154,13 +157,16 @@ export class AdMobService {
       const errorListener = this.rewardedAd.addAdEventListener(
         AdEventType.ERROR,
         (error: any) => {
-          console.error('[AdMob] ❌ Rewarded ad failed to load:', JSON.stringify(error, null, 2));
+          console.error(
+            "[AdMob] ❌ Rewarded ad failed to load:",
+            JSON.stringify(error, null, 2)
+          );
           errorListener();
           reject(error);
         }
       );
 
-      console.log('[AdMob] Starting ad load request...');
+      console.log("[AdMob] Starting ad load request...");
       this.rewardedAd.load();
     });
   }
@@ -171,23 +177,25 @@ export class AdMobService {
    */
   static async showRewardedAd(): Promise<boolean> {
     // Web에서는 광고 표시 안 함
-    if (Platform.OS === 'web') {
-      console.log('[AdMob] Skipping ad show on web platform');
+    if (Platform.OS === "web") {
+      console.log("[AdMob] Skipping ad show on web platform");
       return Promise.resolve(false);
     }
 
     if (!this.rewardedAd) {
-      const error = new Error('Rewarded ad not loaded. Call loadRewardedAd() first.');
-      console.error('[AdMob]', error.message);
+      const error = new Error(
+        "Rewarded ad not loaded. Call loadRewardedAd() first."
+      );
+      console.error("[AdMob]", error.message);
       throw error;
     }
 
-    console.log('[AdMob] Showing rewarded ad');
+    console.log("[AdMob] Showing rewarded ad");
 
     return new Promise((resolve, reject) => {
       if (!this.rewardedAd) {
-        const error = new Error('Rewarded ad not available');
-        console.error('[AdMob]', error.message);
+        const error = new Error("Rewarded ad not available");
+        console.error("[AdMob]", error.message);
         reject(error);
         return;
       }
@@ -197,7 +205,10 @@ export class AdMobService {
       const earnedListener = this.rewardedAd.addAdEventListener(
         RewardedAdEventType.EARNED_REWARD,
         (reward: any) => {
-          console.log('[AdMob] 🎁 User earned reward:', JSON.stringify(reward, null, 2));
+          console.log(
+            "[AdMob] 🎁 User earned reward:",
+            JSON.stringify(reward, null, 2)
+          );
           earned = true;
         }
       );
@@ -205,7 +216,7 @@ export class AdMobService {
       const closedListener = this.rewardedAd.addAdEventListener(
         AdEventType.CLOSED,
         () => {
-          console.log('[AdMob] Rewarded ad closed, earned:', earned);
+          console.log("[AdMob] Rewarded ad closed, earned:", earned);
           earnedListener();
           closedListener();
           this.rewardedAd = null; // 광고 인스턴스 초기화
@@ -213,7 +224,7 @@ export class AdMobService {
         }
       );
 
-      console.log('[AdMob] Calling show() on rewarded ad');
+      console.log("[AdMob] Calling show() on rewarded ad");
       this.rewardedAd.show();
     });
   }
