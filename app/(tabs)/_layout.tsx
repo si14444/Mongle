@@ -76,7 +76,17 @@ export default function TabLayout() {
       </Tabs>
 
       {/* 광고 배너 - 탭 바 바로 위에 고정 */}
-      <View style={[styles.adContainer, { bottom: 65 + insets.bottom }]}>
+      <View
+        style={[
+          styles.adContainer,
+          {
+            bottom:
+              Platform.OS === "android"
+                ? 65 + insets.bottom
+                : 50 + insets.bottom,
+          },
+        ]}
+      >
         <AdBanner />
       </View>
     </View>
