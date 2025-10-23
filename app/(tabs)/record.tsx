@@ -39,6 +39,7 @@ export default function RecordScreen() {
   const saveDreamMutation = useSaveDream();
 
   const contentInputRef = useRef<TextInput>(null);
+  const scrollViewRef = useRef<ScrollView>(null);
   const autoSaveTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const emotions = [
@@ -147,37 +148,38 @@ export default function RecordScreen() {
         start={{ x: 0, y: 0 }}
         end={{ x: 0, y: 1 }}
       >
+        <ThemedView style={styles.header}>
+          <ThemedView style={styles.headerLeft}>
+            <ThemedText
+              type="title"
+              style={[styles.headerTitle, { color: colors.primary }]}
+            >
+              꿈 기록하기
+            </ThemedText>
+          </ThemedView>
+          <ThemedView style={styles.headerRight}>
+            {isSaving && (
+              <ThemedText style={[styles.savingText, { color: colors.accent }]}>
+                저장 중...
+              </ThemedText>
+            )}
+            <TouchableOpacity onPress={handleClear}>
+              <IconSymbol name="trash" size={20} color={colors.icon} />
+            </TouchableOpacity>
+          </ThemedView>
+        </ThemedView>
+
         <KeyboardAvoidingView
           behavior={Platform.OS === "ios" ? "padding" : "height"}
           style={styles.keyboardAvoidingView}
+          keyboardVerticalOffset={Platform.OS === "ios" ? 0 : 20}
         >
-          <ThemedView style={styles.header}>
-            <ThemedView style={styles.headerLeft}>
-              <ThemedText
-                type="title"
-                style={[styles.headerTitle, { color: colors.primary }]}
-              >
-                꿈 기록하기
-              </ThemedText>
-            </ThemedView>
-            <ThemedView style={styles.headerRight}>
-              {isSaving && (
-                <ThemedText
-                  style={[styles.savingText, { color: colors.accent }]}
-                >
-                  저장 중...
-                </ThemedText>
-              )}
-              <TouchableOpacity onPress={handleClear}>
-                <IconSymbol name="trash" size={20} color={colors.icon} />
-              </TouchableOpacity>
-            </ThemedView>
-          </ThemedView>
-
           <ScrollView
+            ref={scrollViewRef}
             style={styles.content}
             contentContainerStyle={styles.contentContainer}
             showsVerticalScrollIndicator={false}
+            keyboardShouldPersistTaps="handled"
           >
             <ThemedView
               style={[
@@ -331,6 +333,12 @@ export default function RecordScreen() {
                 placeholderTextColor={colors.icon}
                 multiline
                 textAlignVertical="top"
+                onFocus={() => {
+                  // 키보드가 나타날 때 스크롤을 하단으로 이동
+                  setTimeout(() => {
+                    scrollViewRef.current?.scrollToEnd({ animated: true });
+                  }, 100);
+                }}
               />
             </ThemedView>
 
@@ -471,7 +479,8 @@ const styles = StyleSheet.create({
   },
   contentContainer: {
     paddingHorizontal: 20,
-    paddingBottom: 130, // 광고 배너 + 탭 바 높이
+    paddingBottom: 130,
+    flexGrow: 1,
   },
   inputContainer: {
     borderRadius: 20,
