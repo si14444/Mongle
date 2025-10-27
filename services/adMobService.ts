@@ -112,6 +112,10 @@ export class AdMobService {
           : Constants.expoConfig?.extra?.EXPO_PUBLIC_ADMOB_ANDROID_REWARD_ID ||
             "ca-app-pub-4535163023491412/6331389147";
 
+    console.log(`[AdMob] Using ad unit ID for ${adType} on ${Platform.OS}:`, adUnitId);
+    console.log(`[AdMob] Constants.appOwnership:`, Constants.appOwnership);
+    console.log(`[AdMob] __DEV__:`, __DEV__);
+
     return adUnitId;
   }
 

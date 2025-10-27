@@ -52,11 +52,7 @@ export default function HomeScreen() {
         >
           <ThemedView style={styles.headerContainer}>
             <LinearGradient
-              colors={[
-                colors.primary + "20",
-                colors.accent + "10",
-                "#FFFFFF",
-              ]}
+              colors={[colors.primary + "20", colors.accent + "10", "#FFFFFF"]}
               style={styles.headerGradient}
               start={{ x: 0, y: 0 }}
               end={{ x: 1, y: 1 }}
@@ -372,6 +368,7 @@ const styles = StyleSheet.create({
     ...CommonStyles.flexRow,
     ...CommonStyles.gap12,
     ...CommonStyles.marginBottom20,
+    backgroundColor: "transparent",
   },
   iconContainer: {
     ...CommonStyles.iconContainer,

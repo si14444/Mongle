@@ -537,7 +537,7 @@ const styles = StyleSheet.create({
   saveButtonContainer: {
     padding: 20,
     paddingBottom: 40,
-    backgroundColor: "#FFFFFF",
+    backgroundColor: "transparent",
   },
   saveButton: {
     borderRadius: 20,

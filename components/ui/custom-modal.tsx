@@ -258,7 +258,7 @@ const styles = StyleSheet.create({
   },
   iconContainer: {
     marginBottom: 16,
-    backgroundColor: '#FFFFFF',
+    backgroundColor: 'transparent',
   },
   title: {
     fontSize: 18,
@@ -287,7 +287,7 @@ const styles = StyleSheet.create({
   buttonContainer: {
     flexDirection: 'row',
     gap: 16,
-    backgroundColor: '#FFFFFF',
+    backgroundColor: 'transparent',
   },
   cancelButton: {
     flex: 1,

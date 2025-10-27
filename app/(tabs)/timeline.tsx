@@ -288,7 +288,6 @@ const styles = StyleSheet.create({
     paddingVertical: 15,
     marginHorizontal: 20,
     marginBottom: 10,
-    borderRadius: 12,
   },
   filterScrollView: {
     paddingHorizontal: 15,
