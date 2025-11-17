@@ -1,17 +1,22 @@
 import { DreamInterpretation, DreamSymbol } from "@/types/dream";
-import Constants from 'expo-constants';
+import Constants from "expo-constants";
 
 export class GeminiService {
   private static getApiKey(): string | null {
     // EAS Build에서는 Constants.expoConfig.extra를 사용해야 함
     const apiKey = Constants.expoConfig?.extra?.EXPO_PUBLIC_GEMINI_API_KEY;
 
-    if (!apiKey || apiKey.startsWith('${')) {
-      console.error("[GeminiService] EXPO_PUBLIC_GEMINI_API_KEY not found or not loaded properly");
+    if (!apiKey || apiKey.startsWith("${")) {
+      console.error(
+        "[GeminiService] EXPO_PUBLIC_GEMINI_API_KEY not found or not loaded properly"
+      );
       return null;
     }
 
-    console.log("[GeminiService] API key found:", apiKey.substring(0, 10) + "...");
+    console.log(
+      "[GeminiService] API key found:",
+      apiKey.substring(0, 10) + "..."
+    );
     return apiKey;
   }
 
@@ -57,21 +62,21 @@ export class GeminiService {
 
       // Gemini REST API 직접 호출
       const response = await fetch(
-        `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-exp:generateContent?key=${apiKey}`,
+        `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-lite:generateContent?key=${apiKey}`,
         {
-          method: 'POST',
+          method: "POST",
           headers: {
-            'Content-Type': 'application/json',
+            "Content-Type": "application/json",
           },
           body: JSON.stringify({
             contents: [
               {
                 parts: [
                   {
-                    text: prompt
-                  }
-                ]
-              }
+                    text: prompt,
+                  },
+                ],
+              },
             ],
             generationConfig: {
               temperature: 0.7,
@@ -83,7 +88,11 @@ export class GeminiService {
 
       if (!response.ok) {
         const errorText = await response.text();
-        console.error("[GeminiService] API request failed:", response.status, errorText);
+        console.error(
+          "[GeminiService] API request failed:",
+          response.status,
+          errorText
+        );
         throw new Error(`Gemini API error: ${response.status}`);
       }
 
@@ -94,7 +103,9 @@ export class GeminiService {
       const text = data.candidates?.[0]?.content?.parts?.[0]?.text;
 
       if (!text) {
-        console.error("[GeminiService] Unable to extract text from Gemini response");
+        console.error(
+          "[GeminiService] Unable to extract text from Gemini response"
+        );
         return this.getFallbackInterpretation(dreamTitle, dreamContent);
       }
 
@@ -113,12 +124,18 @@ export class GeminiService {
         interpretation = JSON.parse(text);
         console.log("Successfully parsed JSON directly:", interpretation);
       } catch (e) {
-        console.log("Direct JSON parsing failed, trying regex extraction. Error:", e);
+        console.log(
+          "Direct JSON parsing failed, trying regex extraction. Error:",
+          e
+        );
 
         // 실패하면 정규식으로 JSON 추출 시도
         const jsonMatch = text.match(/\{[\s\S]*\}/);
         if (!jsonMatch) {
-          console.error("No JSON object found in response. Response text:", text);
+          console.error(
+            "No JSON object found in response. Response text:",
+            text
+          );
           console.log("Using fallback interpretation due to non-JSON response");
           // JSON이 없으면 fallback 사용
           return this.getFallbackInterpretation(dreamTitle, dreamContent);
@@ -149,7 +166,8 @@ export class GeminiService {
       console.error("Failed to interpret dream with Gemini:", error);
 
       // 심각한 에러인지 확인
-      const errorMessage = error instanceof Error ? error.message : String(error);
+      const errorMessage =
+        error instanceof Error ? error.message : String(error);
       const isCriticalError =
         errorMessage.includes("API key") ||
         errorMessage.includes("Network") ||
